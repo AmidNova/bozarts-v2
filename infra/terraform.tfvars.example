@@ -1,0 +1,13 @@
+project     = "bozarts"
+environment = "dev"
+aws_region  = "eu-west-3"
+
+db_name     = "bozarts"
+db_username = "bozarts"
+db_password = "CHANGE_ME_STRONG_PASSWORD"
+
+auth_secret = "generate-with-openssl-rand-base64-32"
+
+ecs_desired_count = 1
+ecs_cpu           = 256
+ecs_memory        = 512
