@@ -18,6 +18,17 @@ export async function requireAuth(): Promise<AuthResult> {
   return { authenticated: true, user: { id, role } };
 }
 
+export async function requireAdmin(): Promise<AuthResult> {
+  const result = await requireAuth();
+  if (!result.authenticated) return result;
+
+  if (result.user.role !== "ADMIN") {
+    return { authenticated: false, error: "Réservé aux administrateurs" };
+  }
+
+  return result;
+}
+
 export async function requireArtisan(): Promise<AuthResult> {
   const result = await requireAuth();
   if (!result.authenticated) return result;
