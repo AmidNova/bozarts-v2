@@ -96,4 +96,27 @@ export const eventRepository = {
       where: { id, creatorId },
     });
   },
+
+  // ─── Admin methods ──────────────────────────────────────────────
+
+  async findAllForAdmin(page = 1, pageSize = DEFAULT_PAGE_SIZE) {
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        include: {
+          creator: { select: { id: true, name: true, firstName: true } },
+          _count: { select: { participants: true } },
+        },
+        orderBy: { startDate: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.event.count(),
+    ]);
+
+    return { events, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
+  },
+
+  async deleteAdmin(id: string) {
+    return prisma.event.delete({ where: { id } });
+  },
 };

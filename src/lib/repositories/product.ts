@@ -101,4 +101,17 @@ export const productRepository = {
       where: { id, artisanId },
     });
   },
+
+  // ─── Admin methods ──────────────────────────────────────────────
+
+  async deleteAdmin(id: string) {
+    return prisma.product.delete({ where: { id } });
+  },
+
+  async updateStock(id: string, inStock: boolean) {
+    return prisma.product.update({
+      where: { id },
+      data: { inStock },
+    });
+  },
 };

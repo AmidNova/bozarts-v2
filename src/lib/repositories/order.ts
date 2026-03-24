@@ -151,4 +151,54 @@ export const orderRepository = {
       data: { status },
     });
   },
+
+  // ─── Admin methods ──────────────────────────────────────────────
+
+  async findAllForAdmin(filters: OrderFilter) {
+    const { status, page = 1, pageSize = DEFAULT_PAGE_SIZE } = filters;
+
+    const where = {
+      ...(status && { status }),
+    };
+
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: {
+          client: {
+            select: { id: true, name: true, firstName: true, email: true },
+          },
+          items: {
+            include: {
+              product: {
+                select: { id: true, name: true, imageUrl: true, price: true },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.order.count({ where }),
+    ]);
+
+    return { orders, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
+  },
+
+  async stats() {
+    const [totalOrders, pendingOrders, revenue] = await Promise.all([
+      prisma.order.count(),
+      prisma.order.count({ where: { status: "PENDING" } }),
+      prisma.order.aggregate({
+        _sum: { totalAmount: true },
+        where: { status: { in: ["CONFIRMED", "SHIPPED", "DELIVERED"] } },
+      }),
+    ]);
+    return {
+      totalOrders,
+      pendingOrders,
+      revenue: Number(revenue._sum.totalAmount ?? 0),
+    };
+  },
 };
