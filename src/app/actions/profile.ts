@@ -28,7 +28,7 @@ export async function updateProfile(
 
   try {
     const user = await userRepository.updateProfile(auth.user.id, parsed.data);
-    revalidatePath("/my-profile");
+    revalidatePath("/profile");
     return ok({ id: user.id });
   } catch {
     return fail("Erreur lors de la mise à jour du profil");
