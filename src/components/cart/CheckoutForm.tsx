@@ -1,12 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
-import { useRouter } from "next/navigation";
-import { createOrder } from "@/app/actions/order";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import type { ActionResult } from "@/lib/action-result";
 
 interface CheckoutFormProps {
   defaultAddress?: string | null;
@@ -21,21 +18,39 @@ export function CheckoutForm({
   shippingFee,
   total,
 }: CheckoutFormProps) {
-  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
-  const [state, formAction, pending] = useActionState(
-    async (
-      _prev: ActionResult<{ id: string }> | null,
-      formData: FormData
-    ) => {
-      const result = await createOrder(formData);
-      if (result.success) {
-        router.push(`/orders/${result.data.id}`);
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setPending(true);
+
+    const formData = new FormData(e.currentTarget);
+    const shippingAddress = formData.get("shippingAddress") as string;
+
+    try {
+      const res = await fetch("/api/stripe/checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shippingAddress }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? "Erreur lors de la creation du paiement");
+        setPending(false);
+        return;
       }
-      return result;
-    },
-    null
-  );
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } catch {
+      setError("Erreur de connexion");
+      setPending(false);
+    }
+  }
 
   return (
     <div className="rounded-xl border p-6">
@@ -56,7 +71,7 @@ export function CheckoutForm({
         </div>
       </div>
 
-      <form action={formAction} className="mt-6 flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="shippingAddress">Adresse de livraison</Label>
           <Textarea
@@ -69,12 +84,10 @@ export function CheckoutForm({
           />
         </div>
 
-        {state && !state.success && (
-          <p className="text-sm text-destructive">{state.error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <Button type="submit" disabled={pending} className="w-full">
-          {pending ? "Commande en cours..." : "Commander"}
+          {pending ? "Redirection vers le paiement..." : "Payer"}
         </Button>
       </form>
     </div>
