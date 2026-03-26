@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { userRepository } from "@/lib/repositories/user";
 import { orderRepository } from "@/lib/repositories/order";
 import { reviewRepository } from "@/lib/repositories/review";
+import { formatCurrency } from "@/lib/format";
 
 export default async function AdminDashboardPage() {
   const [userCounts, orderStats, pendingReviews] = await Promise.all([
@@ -15,19 +16,13 @@ export default async function AdminDashboardPage() {
     { label: "Artisans actifs", value: userCounts.artisans },
     { label: "Commandes totales", value: orderStats.totalOrders },
     { label: "Commandes en attente", value: orderStats.pendingOrders },
-    {
-      label: "Revenus",
-      value: new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
-      }).format(orderStats.revenue),
-    },
+    { label: "Revenus", value: formatCurrency(orderStats.revenue) },
     { label: "Avis en attente", value: pendingReviews.length },
   ];
 
   return (
     <>
-      <h1 className="text-2xl font-bold tracking-tight">Tableau de bord</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight">Tableau de bord</h1>
       <p className="mt-1 text-muted-foreground">
         Vue d&apos;ensemble de la plateforme
       </p>

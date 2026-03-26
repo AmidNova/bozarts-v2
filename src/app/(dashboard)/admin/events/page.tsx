@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { eventRepository } from "@/lib/repositories/event";
+import { formatDate, formatFullName, pluralize } from "@/lib/format";
 import {
   Table,
   TableBody,
@@ -28,8 +29,8 @@ export default async function AdminEventsPage({ searchParams }: Props) {
   return (
     <>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Evenements</h1>
-        <p className="mt-1 text-muted-foreground">{total} evenement{total > 1 ? "s" : ""}</p>
+        <h1 className="font-heading text-2xl font-bold tracking-tight">Evenements</h1>
+        <p className="mt-1 text-muted-foreground">{pluralize(total, "evenement")}</p>
       </div>
 
       {events.length === 0 ? (
@@ -52,9 +53,6 @@ export default async function AdminEventsPage({ searchParams }: Props) {
             </TableHeader>
             <TableBody>
               {events.map((event) => {
-                const creatorName = [event.creator.firstName, event.creator.name]
-                  .filter(Boolean)
-                  .join(" ");
                 const isPast = new Date(event.endDate) < now;
 
                 return (
@@ -72,11 +70,11 @@ export default async function AdminEventsPage({ searchParams }: Props) {
                         href={`/admin/users/${event.creator.id}`}
                         className="hover:underline"
                       >
-                        {creatorName}
+                        {formatFullName(event.creator.firstName, event.creator.name)}
                       </Link>
                     </TableCell>
                     <TableCell className="text-sm">
-                      {new Date(event.startDate).toLocaleDateString("fr-FR")}
+                      {formatDate(event.startDate)}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {event.location}

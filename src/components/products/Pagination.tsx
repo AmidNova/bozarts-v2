@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 interface PaginationProps {
@@ -9,7 +9,12 @@ interface PaginationProps {
   totalPages: number;
 }
 
+/**
+ * Composant de pagination generique.
+ * Fonctionne sur n'importe quelle page — le pathname est detecte automatiquement.
+ */
 export function Pagination({ currentPage, totalPages }: PaginationProps) {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   if (totalPages <= 1) return null;
@@ -17,7 +22,7 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
   function pageUrl(page: number) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(page));
-    return `/products?${params.toString()}`;
+    return `${pathname}?${params.toString()}`;
   }
 
   return (

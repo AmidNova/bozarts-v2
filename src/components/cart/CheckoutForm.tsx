@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/format";
 
 interface CheckoutFormProps {
   defaultAddress?: string | null;
@@ -59,15 +60,15 @@ export function CheckoutForm({
       <div className="mt-4 space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Sous-total</span>
-          <span>{subtotal.toFixed(2)}&nbsp;&euro;</span>
+          <span>{formatCurrency(subtotal)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Livraison</span>
-          <span>{shippingFee.toFixed(2)}&nbsp;&euro;</span>
+          <span>{formatCurrency(shippingFee)}</span>
         </div>
         <div className="flex justify-between border-t pt-2 text-base font-semibold">
           <span>Total</span>
-          <span>{total.toFixed(2)}&nbsp;&euro;</span>
+          <span>{formatCurrency(total)}</span>
         </div>
       </div>
 

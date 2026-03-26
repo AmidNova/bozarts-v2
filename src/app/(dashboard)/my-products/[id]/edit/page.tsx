@@ -22,7 +22,7 @@ export default async function EditProductPage({ params }: Props) {
 
   return (
     <>
-      <h1 className="text-2xl font-bold tracking-tight">Modifier le produit</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight">Modifier le produit</h1>
       <div className="mt-6 max-w-2xl">
         <ProductForm
           product={{

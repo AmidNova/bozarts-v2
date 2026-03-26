@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { updateCartQuantity, removeFromCart } from "@/app/actions/cart";
 import { Button } from "@/components/ui/button";
+import { formatCurrency, formatFullName } from "@/lib/format";
 import type { ActionResult } from "@/lib/action-result";
 
 interface CartItemRowProps {
@@ -24,9 +25,7 @@ interface CartItemRowProps {
 
 export function CartItemRow({ item }: CartItemRowProps) {
   const price = Number(item.product.price);
-  const displayName = [item.product.artisan.firstName, item.product.artisan.name]
-    .filter(Boolean)
-    .join(" ");
+  const displayName = formatFullName(item.product.artisan.firstName, item.product.artisan.name);
 
   const [, updateAction, updatingQty] = useActionState(
     async (_prev: ActionResult<void> | null, formData: FormData) => {
@@ -61,7 +60,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
       <div className="flex flex-1 flex-col gap-1">
         <h3 className="font-medium">{item.product.name}</h3>
         <p className="text-xs text-muted-foreground">par {displayName}</p>
-        <p className="text-sm font-semibold">{price.toFixed(2)}&nbsp;&euro;</p>
+        <p className="text-sm font-semibold">{formatCurrency(price)}</p>
       </div>
 
       <div className="flex items-center gap-2">
@@ -99,7 +98,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
       </div>
 
       <div className="w-20 text-right text-sm font-semibold">
-        {(price * item.quantity).toFixed(2)}&nbsp;&euro;
+        {formatCurrency(price * item.quantity)}
       </div>
 
       <form action={removeAction}>

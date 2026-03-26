@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { reviewRepository } from "@/lib/repositories/review";
+import { formatDate, formatFullName, formatStars } from "@/lib/format";
 import { ReviewModerationActions } from "@/components/reviews/ReviewModerationActions";
 import {
   Table,
@@ -21,7 +22,7 @@ export default async function AdminReviewsPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="text-2xl font-bold tracking-tight">Moderation des avis</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight">Moderation des avis</h1>
       <p className="mt-1 text-muted-foreground">
         {pendingReviews.length} avis en attente de moderation
       </p>
@@ -47,7 +48,7 @@ export default async function AdminReviewsPage() {
             {pendingReviews.map((review) => (
               <TableRow key={review.id}>
                 <TableCell className="text-sm">
-                  {review.author.firstName ?? review.author.name}
+                  {formatFullName(review.author.firstName, review.author.name)}
                 </TableCell>
                 <TableCell>
                   <Link
@@ -58,16 +59,16 @@ export default async function AdminReviewsPage() {
                   </Link>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {review.target.firstName ?? review.target.name}
+                  {formatFullName(review.target.firstName, review.target.name)}
                 </TableCell>
                 <TableCell>
-                  <span className="font-medium">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
+                  <span className="font-medium">{formatStars(review.rating)}</span>
                 </TableCell>
                 <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
                   {review.comment ?? "-"}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {new Date(review.createdAt).toLocaleDateString("fr-FR")}
+                  {formatDate(review.createdAt)}
                 </TableCell>
                 <TableCell className="text-right">
                   <ReviewModerationActions reviewId={review.id} />

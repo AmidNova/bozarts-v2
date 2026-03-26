@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { productRepository } from "@/lib/repositories/product";
+import { formatCurrency } from "@/lib/format";
+import { CATEGORY_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,16 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DeleteProductButton } from "@/components/products/DeleteProductButton";
-
-const categoryLabels: Record<string, string> = {
-  CERAMIQUE: "Ceramique",
-  MOBILIER: "Mobilier",
-  BIJOUX: "Bijoux",
-  TEXTILE: "Textile",
-  PEINTURE: "Peinture",
-  SCULPTURE: "Sculpture",
-  AUTRE: "Autre",
-};
+import { StockBadge } from "@/components/ui/StatusBadge";
 
 export default async function MyProductsPage() {
   const session = await auth();
@@ -35,7 +28,7 @@ export default async function MyProductsPage() {
   return (
     <>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Mes produits</h1>
+        <h1 className="font-heading text-2xl font-bold tracking-tight">Mes produits</h1>
         <Button render={<Link href="/my-products/new" />}>
           Nouveau produit
         </Button>
@@ -66,18 +59,12 @@ export default async function MyProductsPage() {
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>
                     <Badge variant="secondary">
-                      {categoryLabels[product.category] ?? product.category}
+                      {CATEGORY_LABELS[product.category] ?? product.category}
                     </Badge>
                   </TableCell>
+                  <TableCell>{formatCurrency(product.price)}</TableCell>
                   <TableCell>
-                    {Number(product.price).toFixed(2)}&nbsp;&euro;
-                  </TableCell>
-                  <TableCell>
-                    {product.inStock ? (
-                      <Badge variant="outline">En stock</Badge>
-                    ) : (
-                      <Badge variant="destructive">Rupture</Badge>
-                    )}
+                    <StockBadge value={String(product.inStock)} />
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">

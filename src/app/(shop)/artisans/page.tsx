@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { userRepository } from "@/lib/repositories/user";
+import { formatFullName, pluralize } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pagination } from "@/components/products/Pagination";
 
@@ -15,7 +16,7 @@ export default async function ArtisansPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-bold tracking-tight">Nos artisans</h1>
+      <h1 className="font-heading text-3xl font-bold tracking-tight">Nos artisans</h1>
       <p className="mt-1 text-muted-foreground">
         Decouvrez les artisans et leurs creations uniques
       </p>
@@ -28,9 +29,7 @@ export default async function ArtisansPage({ searchParams }: Props) {
         <>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {artisans.map((artisan) => {
-              const displayName = [artisan.firstName, artisan.name]
-                .filter(Boolean)
-                .join(" ");
+              const displayName = formatFullName(artisan.firstName, artisan.name);
 
               return (
                 <Link
@@ -61,8 +60,7 @@ export default async function ArtisansPage({ searchParams }: Props) {
                           </p>
                         )}
                         <p className="mt-2 text-xs text-muted-foreground">
-                          {artisan._count.products} produit
-                          {artisan._count.products > 1 ? "s" : ""}
+                          {pluralize(artisan._count.products, "produit")}
                         </p>
                       </div>
                     </CardContent>

@@ -1,20 +1,15 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { CATEGORY_OPTIONS } from "@/lib/constants";
 
-const categories = [
-  { value: "", label: "Toutes" },
-  { value: "CERAMIQUE", label: "Ceramique" },
-  { value: "MOBILIER", label: "Mobilier" },
-  { value: "BIJOUX", label: "Bijoux" },
-  { value: "TEXTILE", label: "Textile" },
-  { value: "PEINTURE", label: "Peinture" },
-  { value: "SCULPTURE", label: "Sculpture" },
-  { value: "AUTRE", label: "Autre" },
-];
-
+/**
+ * Filtre par categorie sous forme de boutons pills.
+ * Utilise les constantes centralisees CATEGORY_OPTIONS.
+ */
 export function CategoryFilter() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const current = searchParams.get("category") ?? "";
 
@@ -26,12 +21,12 @@ export function CategoryFilter() {
       params.delete("category");
     }
     params.delete("page");
-    router.push(`/products?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   return (
     <div className="flex flex-wrap gap-2">
-      {categories.map((cat) => (
+      {CATEGORY_OPTIONS.map((cat) => (
         <button
           key={cat.value}
           onClick={() => handleChange(cat.value)}

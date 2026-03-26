@@ -43,7 +43,7 @@ export default function LoginPage() {
     <div className="mx-auto flex min-h-[60vh] max-w-md items-center px-4 py-8">
       <div className="w-full space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Connexion</h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">Connexion</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Connectez-vous a votre compte Bozarts
           </p>

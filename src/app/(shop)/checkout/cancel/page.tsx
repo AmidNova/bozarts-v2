@@ -5,7 +5,7 @@ export default function CheckoutCancelPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-16 text-center">
       <div className="text-5xl">&#10007;</div>
-      <h1 className="mt-4 text-2xl font-bold tracking-tight">
+      <h1 className="font-heading mt-4 text-2xl font-bold tracking-tight">
         Paiement annule
       </h1>
       <p className="mt-2 text-muted-foreground">

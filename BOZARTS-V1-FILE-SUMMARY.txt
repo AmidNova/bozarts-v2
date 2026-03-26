@@ -1,0 +1,157 @@
+================================================================================
+BOZARTS V1 - COMPLETE REFERENCE EXTRACTION
+================================================================================
+
+GENERATED: 2026-03-26
+SOURCE: ~/Documents/projects/Bozarts/
+
+================================================================================
+EXTRACTION SUMMARY
+================================================================================
+
+
+COMPLETE HTML FILES EXTRACTED: 7 pages
+--------------------------------------
+1. pages/index.html                    - Homepage with trending items & events
+2. pages/produit.html                  - Product detail page with reviews
+3. pages/panier.html                   - Shopping cart with payment modal
+4. pages/profil.html                   - User profile with editable fields
+5. pages/recherche.html                - Search results listing
+6. pages/mes-annonces.html             - User's product listings
+7. pages/ajouter-evenement.html        - Event creation form
+
+SHARED COMPONENTS (across all pages):
+- Header: Logo, search bar, user welcome, navigation icons
+- Footer: Copyright, links, social media icons
+
+================================================================================
+CSS FILES INVENTORY
+================================================================================
+
+COMPLETE CSS FILE COUNT: 14 files
+
+Core Stylesheets:
+1. assets/css/style.css                - 563 lines - Main/global styles
+2. assets/css/panier.css               - 276 lines - Cart page
+3. assets/css/produit.css              - 446 lines - Product detail
+4. assets/css/profil.css               - 309 lines - User profile
+5. assets/css/recherche.css            - 109 lines - Search results
+6. assets/css/forms.css                - 183 lines - Form styling
+7. assets/css/avis.css                 - 165 lines - Reviews section
+
+Additional Stylesheets:
+8. assets/css/mes-annonces.css         - My products/listings
+9. assets/css/ajouter-evenement.css    - Event form
+10. assets/css/admin.css               - Admin panel
+11. assets/css/CGU.css                 - Terms & conditions
+12. assets/css/faq.css                 - FAQ page
+13. assets/css/messagerie.css          - Messaging/notifications
+14. assets/css/transactions.css        - Orders/transactions page
+
+================================================================================
+ASSET FILES INVENTORY
+================================================================================
+
+ICONS (12 files):
+- assets/icons/LOGO.png
+- assets/icons/LOGO_SOMBRE.png
+- assets/icons/LOGO-transparent.png
+- assets/icons/search-icon.png
+- assets/icons/panier-icon.png
+- assets/icons/profil-icon.png
+- assets/icons/notifications-icon.png
+- assets/icons/mes-transactions.png
+- assets/icons/facebook.png
+- assets/icons/instagram.png
+- assets/icons/twitter.png
+- assets/icons/linkedin.png
+
+PRODUCT IMAGES (11 files):
+- assets/articles/article1.jpg
+- assets/articles/article2.jpg
+- assets/articles/article3.jpg
+- assets/articles/article4.jpg
+- assets/articles/article5.jpg
+- assets/articles/article6.jpg
+- assets/articles/article_sans_image.jpg
+- assets/articles/6832fbc733fc5-peinture_foret.png
+- assets/articles/6832fc40bd005-peinture-oiseau.jpg
+- assets/articles/6832fca8080a2-nature_octobre.jpg
+- assets/articles/68330d19ab4d6-chaise_osier.jpg
+
+EVENT IMAGES (3 files):
+- assets/evenements/galerie_perigord.jpg
+- assets/evenements/gallerie_paris.jpg
+- assets/evenements/gallerie_sculpture.jpg
+
+TOTAL ASSETS: 26 image files
+
+================================================================================
+COLOR SCHEME
+================================================================================
+
+PRIMARY COLORS:
+- Orange (Primary):      #f47f3b
+- Dark Blue (Secondary): #2b3e50
+- Light Beige (BG):      #fff6ec
+- White:                 #FFFFFF
+- Dark Hover:            #19242f
+
+FUNCTIONAL COLORS:
+- Gold (Stars):          #ffc107
+- Green (Success):       #4CAF50 / #d4edda
+- Red (Delete/Error):    #e74c3c / #dc3545 / #f8d7da
+- Borders (Light):       #e0e0e0
+- Background (Light):    #f7f7f7 / #f8f9fa
+
+================================================================================
+KEY FINDINGS FOR V2 MIGRATION
+================================================================================
+
+LAYOUT PATTERNS:
+1. Header is consistent across all pages (searchable, user state aware)
+2. Footer is consistent across all pages (copyright, links, social)
+3. Grid/flex layouts for product listings and results
+4. Modal-based editing for user profile fields
+5. 2-column layout for product detail (image + info)
+6. Sticky sidebar for cart summary
+
+FORM ELEMENTS:
+1. Forms use primary color background with white text
+2. Modals for editing profile data
+3. Payment modal in cart with comprehensive form
+4. Event creation form with datetime inputs
+5. Review form with star rating system
+
+INTERACTIVE COMPONENTS:
+1. Cart with remove button and payment flow
+2. Star rating system with hover effects
+3. Add to cart button with icon animation
+4. Contact seller messaging button
+5. Search functionality via GET parameter
+
+MISSING/TO BE DEFINED:
+1. No dedicated artisan/artist profile page (referenced in product cards)
+2. No dedicated events listing page (only on homepage)
+3. No shopping/filtering page (only search results)
+4. Admin pages exist but details not fully documented
+
+================================================================================
+REFERENCE FILE LOCATION
+================================================================================
+
+Complete documentation saved to:
+~/Documents/projects/bozarts-v2/bozarts-v1-complete-reference.md
+
+This file contains:
+- Full HTML source for all 7 pages
+- Complete CSS breakdown for main stylesheets
+- Asset inventory
+- Color palette reference
+- Component structure reference
+
+FILE SIZE: 33 KB (1208 lines)
+
+================================================================================
+END OF SUMMARY
+================================================================================

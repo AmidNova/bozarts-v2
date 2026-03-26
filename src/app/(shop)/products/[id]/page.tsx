@@ -3,21 +3,13 @@ import Link from "next/link";
 import { productRepository } from "@/lib/repositories/product";
 import { reviewRepository } from "@/lib/repositories/review";
 import { auth } from "@/lib/auth";
+import { formatCurrency, formatFullName } from "@/lib/format";
+import { CATEGORY_LABELS } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AddToCartButton } from "@/components/products/AddToCartButton";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { Button } from "@/components/ui/button";
-
-const categoryLabels: Record<string, string> = {
-  CERAMIQUE: "Ceramique",
-  MOBILIER: "Mobilier",
-  BIJOUX: "Bijoux",
-  TEXTILE: "Textile",
-  PEINTURE: "Peinture",
-  SCULPTURE: "Sculpture",
-  AUTRE: "Autre",
-};
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -38,9 +30,7 @@ export default async function ProductDetailPage({ params }: Props) {
     : false;
   const canReview = userId && !hasReviewed && product.artisanId !== userId;
 
-  const artisanName = [product.artisan.firstName, product.artisan.name]
-    .filter(Boolean)
-    .join(" ");
+  const artisanName = formatFullName(product.artisan.firstName, product.artisan.name);
 
   const avgRating =
     product.reviews.length > 0
@@ -70,13 +60,13 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="flex flex-col gap-4">
           <div>
             <Badge variant="secondary">
-              {categoryLabels[product.category] ?? product.category}
+              {CATEGORY_LABELS[product.category] ?? product.category}
             </Badge>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight">
+            <h1 className="font-heading mt-2 text-3xl font-bold tracking-tight">
               {product.name}
             </h1>
             <p className="mt-1 text-2xl font-semibold">
-              {Number(product.price).toFixed(2)}&nbsp;&euro;
+              {formatCurrency(product.price)}
             </p>
           </div>
 
@@ -125,29 +115,26 @@ export default async function ProductDetailPage({ params }: Props) {
         <h2 className="text-xl font-semibold">Avis clients</h2>
         {product.reviews.length > 0 ? (
           <div className="mt-4 flex flex-col gap-4">
-            {product.reviews.map((review) => {
-              const reviewerName = [review.author.firstName, review.author.name]
-                .filter(Boolean)
-                .join(" ");
-              return (
-                <div
-                  key={review.id}
-                  className="rounded-lg border p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium">{reviewerName}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {review.rating}/5
-                    </p>
-                  </div>
-                  {review.comment && (
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {review.comment}
-                    </p>
-                  )}
+            {product.reviews.map((review) => (
+              <div
+                key={review.id}
+                className="rounded-lg border p-4"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="font-medium">
+                    {formatFullName(review.author.firstName, review.author.name)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {review.rating}/5
+                  </p>
                 </div>
-              );
-            })}
+                {review.comment && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {review.comment}
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
         ) : (
           <p className="mt-4 text-sm text-muted-foreground">Aucun avis pour le moment</p>

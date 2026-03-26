@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { userRepository } from "@/lib/repositories/user";
 import { AdminUserFilterSchema } from "@/lib/schemas/admin";
+import { formatDate, formatFullName, pluralize } from "@/lib/format";
 import {
   Table,
   TableBody,
@@ -11,8 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { UserRoleBadge } from "@/components/admin/UserRoleBadge";
-import { UserStatusBadge } from "@/components/admin/UserStatusBadge";
+import { UserRoleBadge, UserStatusBadge } from "@/components/ui/StatusBadge";
 import { AdminUserFilter } from "@/components/admin/AdminUserFilter";
 import { Pagination } from "@/components/products/Pagination";
 
@@ -30,8 +30,8 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Utilisateurs</h1>
-          <p className="mt-1 text-muted-foreground">{total} utilisateur{total > 1 ? "s" : ""}</p>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">Utilisateurs</h1>
+          <p className="mt-1 text-muted-foreground">{pluralize(total, "utilisateur")}</p>
         </div>
         <Suspense>
           <AdminUserFilter />
@@ -58,40 +58,34 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => {
-                const name = [user.firstName, user.name]
-                  .filter(Boolean)
-                  .join(" ");
-
-                return (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      {name || "-"}
-                    </TableCell>
-                    <TableCell className="text-sm">{user.email}</TableCell>
-                    <TableCell>
-                      <UserRoleBadge role={user.role} />
-                    </TableCell>
-                    <TableCell>
-                      <UserStatusBadge status={user.status} />
-                    </TableCell>
-                    <TableCell>{user._count.products}</TableCell>
-                    <TableCell>{user._count.orders}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(user.createdAt).toLocaleDateString("fr-FR")}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        render={<Link href={`/admin/users/${user.id}`} />}
-                      >
-                        Details
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">
+                    {formatFullName(user.firstName, user.name) || "-"}
+                  </TableCell>
+                  <TableCell className="text-sm">{user.email}</TableCell>
+                  <TableCell>
+                    <UserRoleBadge value={user.role} />
+                  </TableCell>
+                  <TableCell>
+                    <UserStatusBadge value={user.status} />
+                  </TableCell>
+                  <TableCell>{user._count.products}</TableCell>
+                  <TableCell>{user._count.orders}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatDate(user.createdAt)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      render={<Link href={`/admin/users/${user.id}`} />}
+                    >
+                      Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
           <Suspense>

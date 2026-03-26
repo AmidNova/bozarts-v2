@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { productRepository } from "@/lib/repositories/product";
 import { ProductFilterSchema } from "@/lib/schemas/product";
+import { formatCurrency, formatDate, formatFullName, pluralize } from "@/lib/format";
+import { CATEGORY_LABELS } from "@/lib/constants";
 import {
   Table,
   TableBody,
@@ -15,6 +17,7 @@ import { ProductAdminActions } from "@/components/admin/ProductAdminActions";
 import { CategoryFilter } from "@/components/products/CategoryFilter";
 import { SearchBar } from "@/components/products/SearchBar";
 import { Pagination } from "@/components/products/Pagination";
+import { StockBadge } from "@/components/ui/StatusBadge";
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -30,8 +33,8 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Produits</h1>
-          <p className="mt-1 text-muted-foreground">{total} produit{total > 1 ? "s" : ""}</p>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">Produits</h1>
+          <p className="mt-1 text-muted-foreground">{pluralize(total, "produit")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Suspense>
@@ -62,60 +65,44 @@ export default async function AdminProductsPage({ searchParams }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product) => {
-                const artisanName = [
-                  product.artisan.firstName,
-                  product.artisan.name,
-                ]
-                  .filter(Boolean)
-                  .join(" ");
-
-                return (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <Link
-                        href={`/products/${product.id}`}
-                        className="font-medium hover:underline"
-                      >
-                        {product.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      <Link
-                        href={`/admin/users/${product.artisan.id}`}
-                        className="hover:underline"
-                      >
-                        {artisanName}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{product.category}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {new Intl.NumberFormat("fr-FR", {
-                        style: "currency",
-                        currency: "EUR",
-                      }).format(Number(product.price))}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={product.inStock ? "default" : "destructive"}
-                      >
-                        {product.inStock ? "En stock" : "Epuise"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(product.createdAt).toLocaleDateString("fr-FR")}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <ProductAdminActions
-                        productId={product.id}
-                        inStock={product.inStock}
-                      />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {products.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell>
+                    <Link
+                      href={`/products/${product.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {product.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    <Link
+                      href={`/admin/users/${product.artisan.id}`}
+                      className="hover:underline"
+                    >
+                      {formatFullName(product.artisan.firstName, product.artisan.name)}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">
+                      {CATEGORY_LABELS[product.category] ?? product.category}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{formatCurrency(product.price)}</TableCell>
+                  <TableCell>
+                    <StockBadge value={String(product.inStock)} />
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatDate(product.createdAt)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <ProductAdminActions
+                      productId={product.id}
+                      inStock={product.inStock}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
           <Suspense>

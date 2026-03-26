@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { orderRepository } from "@/lib/repositories/order";
 import { OrderFilterSchema } from "@/lib/schemas/order";
+import { formatCurrency, formatDate, formatFullName, pluralize } from "@/lib/format";
 import {
   Table,
   TableBody,
@@ -11,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import { OrderStatusFilter } from "@/components/orders/OrderStatusFilter";
 import { Pagination } from "@/components/products/Pagination";
 
@@ -29,8 +30,8 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Commandes</h1>
-          <p className="mt-1 text-muted-foreground">{total} commande{total > 1 ? "s" : ""}</p>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">Commandes</h1>
+          <p className="mt-1 text-muted-foreground">{pluralize(total, "commande")}</p>
         </div>
         <Suspense>
           <OrderStatusFilter />
@@ -56,52 +57,41 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((order) => {
-                const clientName = [order.client.firstName, order.client.name]
-                  .filter(Boolean)
-                  .join(" ");
-
-                return (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-xs">
-                      {order.id.slice(0, 8)}...
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/admin/users/${order.client.id}`}
-                        className="hover:underline"
-                      >
-                        {clientName || order.client.email}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      {order.items.length} article
-                      {order.items.length > 1 ? "s" : ""}
-                    </TableCell>
-                    <TableCell>
-                      {new Intl.NumberFormat("fr-FR", {
-                        style: "currency",
-                        currency: "EUR",
-                      }).format(Number(order.totalAmount))}
-                    </TableCell>
-                    <TableCell>
-                      <OrderStatusBadge status={order.status} />
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleDateString("fr-FR")}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        render={<Link href={`/admin/orders/${order.id}`} />}
-                      >
-                        Details
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {orders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-mono text-xs">
+                    {order.id.slice(0, 8)}...
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/admin/users/${order.client.id}`}
+                      className="hover:underline"
+                    >
+                      {formatFullName(order.client.firstName, order.client.name) ||
+                        order.client.email}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    {pluralize(order.items.length, "article")}
+                  </TableCell>
+                  <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
+                  <TableCell>
+                    <OrderStatusBadge value={order.status} />
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatDate(order.createdAt)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      render={<Link href={`/admin/orders/${order.id}`} />}
+                    >
+                      Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
           <Suspense>

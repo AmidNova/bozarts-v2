@@ -23,7 +23,7 @@ export async function Header() {
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-6">
-          <Link href="/" className="text-xl font-bold tracking-tight">
+          <Link href="/" className="font-heading text-xl font-bold tracking-tight text-primary">
             Bozarts
           </Link>
           <nav className="hidden items-center gap-4 text-sm md:flex">
@@ -87,26 +87,22 @@ export async function Header() {
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              <Link href="/messages" className="relative">
-                <Button variant="ghost" size="sm">
-                  Messages
-                  {unreadCount > 0 && (
-                    <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                      {unreadCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-              <Link href="/cart" className="relative">
-                <Button variant="ghost" size="sm">
-                  Panier
-                  {cartCount > 0 && (
-                    <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                      {cartCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
+              <Button variant="ghost" size="sm" render={<Link href="/messages" />}>
+                Messages
+                {unreadCount > 0 && (
+                  <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+              <Button variant="ghost" size="sm" render={<Link href="/cart" />}>
+                Panier
+                {cartCount > 0 && (
+                  <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
               <UserNav user={user} />
             </>
           ) : (

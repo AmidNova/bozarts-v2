@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { orderRepository } from "@/lib/repositories/order";
+import { formatCurrency, formatDate, formatFullName } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -10,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import { OrderStatusUpdateForm } from "@/components/admin/OrderStatusUpdateForm";
 import { Separator } from "@/components/ui/separator";
 
@@ -24,29 +25,17 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
   if (!order) notFound();
 
-  const clientName = [order.client.firstName, order.client.name]
-    .filter(Boolean)
-    .join(" ");
-
-  const formatCurrency = (value: number | { toNumber?: () => number }) => {
-    const num = typeof value === "number" ? value : Number(value);
-    return new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: "EUR",
-    }).format(num);
-  };
-
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="font-heading text-2xl font-bold tracking-tight">
             Commande {order.id.slice(0, 8)}...
           </h1>
           <div className="mt-2 flex items-center gap-3">
-            <OrderStatusBadge status={order.status} />
+            <OrderStatusBadge value={order.status} />
             <span className="text-sm text-muted-foreground">
-              {new Date(order.createdAt).toLocaleDateString("fr-FR")}
+              {formatDate(order.createdAt)}
             </span>
           </div>
         </div>
@@ -71,7 +60,8 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 href={`/admin/users/${order.client.id}`}
                 className="font-medium hover:underline"
               >
-                {clientName || order.client.email}
+                {formatFullName(order.client.firstName, order.client.name) ||
+                  order.client.email}
               </Link>
             </p>
             <p className="text-muted-foreground">{order.client.email}</p>
@@ -119,9 +109,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                   href={`/admin/users/${item.product.artisan.id}`}
                   className="hover:underline"
                 >
-                  {[item.product.artisan.firstName, item.product.artisan.name]
-                    .filter(Boolean)
-                    .join(" ")}
+                  {formatFullName(item.product.artisan.firstName, item.product.artisan.name)}
                 </Link>
               </TableCell>
               <TableCell>{formatCurrency(item.unitPrice)}</TableCell>

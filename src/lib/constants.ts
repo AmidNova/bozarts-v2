@@ -23,3 +23,24 @@ export const REVIEW_RATING_MAX = 5;
 
 export const CART_QUANTITY_MIN = 1;
 export const CART_QUANTITY_MAX = 99;
+
+// ─── Category Labels ────────────────────────────────────────────────
+//
+// Mapping entre les valeurs Prisma (enum) et les labels affiches en UI.
+// Utilise par les filtres, badges et formulaires produit.
+
+export const CATEGORY_LABELS: Record<string, string> = {
+  CERAMIQUE: "Ceramique",
+  MOBILIER: "Mobilier",
+  BIJOUX: "Bijoux",
+  TEXTILE: "Textile",
+  PEINTURE: "Peinture",
+  SCULPTURE: "Sculpture",
+  AUTRE: "Autre",
+};
+
+/** Options pour les selects/filtres de categorie (avec "Toutes" en premier). */
+export const CATEGORY_OPTIONS = [
+  { value: "", label: "Toutes" },
+  ...Object.entries(CATEGORY_LABELS).map(([value, label]) => ({ value, label })),
+];

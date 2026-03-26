@@ -1,12 +1,17 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+/**
+ * Barre de recherche generique.
+ * Met a jour le parametre "search" dans l'URL de la page courante.
+ */
 export function SearchBar() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
 
@@ -19,14 +24,14 @@ export function SearchBar() {
       params.delete("search");
     }
     params.delete("page");
-    router.push(`/products?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2">
       <Input
         type="search"
-        placeholder="Rechercher un produit..."
+        placeholder="Rechercher..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="max-w-sm"

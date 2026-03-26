@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatDate, formatFullName, pluralize } from "@/lib/format";
 
 interface EventCardProps {
   event: {
@@ -21,9 +22,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
-  const creatorName = [event.creator.firstName, event.creator.name]
-    .filter(Boolean)
-    .join(" ");
+  const creatorName = formatFullName(event.creator.firstName, event.creator.name);
 
   const isOngoing = new Date() >= event.startDate && new Date() <= event.endDate;
 
@@ -49,17 +48,13 @@ export function EventCard({ event }: EventCardProps) {
         <CardContent className="flex flex-col gap-1">
           <h3 className="line-clamp-1 font-medium">{event.title}</h3>
           <p className="text-xs text-muted-foreground">
-            {new Date(event.startDate).toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
+            {formatDate(event.startDate, "long")}
           </p>
           <p className="text-xs text-muted-foreground">{event.location}</p>
           <div className="mt-1 flex items-center justify-between">
             <p className="text-xs text-muted-foreground">par {creatorName}</p>
             <p className="text-xs text-muted-foreground">
-              {event._count.participants} participant{event._count.participants !== 1 ? "s" : ""}
+              {pluralize(event._count.participants, "participant")}
             </p>
           </div>
         </CardContent>

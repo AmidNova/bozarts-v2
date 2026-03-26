@@ -18,7 +18,7 @@ export default async function AdminCguPage() {
   return (
     <>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
+        <h1 className="font-heading text-2xl font-bold tracking-tight">
           Conditions Generales d&apos;Utilisation
         </h1>
         <p className="mt-1 text-muted-foreground">

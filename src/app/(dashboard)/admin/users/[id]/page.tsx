@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { userRepository } from "@/lib/repositories/user";
+import { formatDate, formatFullName } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserRoleBadge } from "@/components/admin/UserRoleBadge";
-import { UserStatusBadge } from "@/components/admin/UserStatusBadge";
+import { UserRoleBadge, UserStatusBadge } from "@/components/ui/StatusBadge";
 import { UserActions } from "@/components/admin/UserActions";
 import { Separator } from "@/components/ui/separator";
 
@@ -16,18 +16,16 @@ export default async function AdminUserDetailPage({ params }: Props) {
 
   if (!user) notFound();
 
-  const fullName = [user.firstName, user.name].filter(Boolean).join(" ");
-
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {fullName || user.email}
+          <h1 className="font-heading text-2xl font-bold tracking-tight">
+            {formatFullName(user.firstName, user.name) || user.email}
           </h1>
           <div className="mt-2 flex items-center gap-2">
-            <UserRoleBadge role={user.role} />
-            <UserStatusBadge status={user.status} />
+            <UserRoleBadge value={user.role} />
+            <UserStatusBadge value={user.status} />
           </div>
         </div>
         <UserActions
@@ -61,7 +59,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
             </p>
             <p>
               <span className="text-muted-foreground">Inscription :</span>{" "}
-              {new Date(user.createdAt).toLocaleDateString("fr-FR")}
+              {formatDate(user.createdAt)}
             </p>
           </CardContent>
         </Card>

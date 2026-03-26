@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { orderRepository } from "@/lib/repositories/order";
+import { formatCurrency, formatDate, formatFullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import { UpdateStatusForm } from "@/components/orders/UpdateStatusForm";
 
 interface Props {
@@ -32,10 +33,6 @@ export default async function MyOrderDetailPage({ params }: Props) {
     notFound();
   }
 
-  const clientName = [order.client.firstName, order.client.name]
-    .filter(Boolean)
-    .join(" ");
-
   return (
     <>
       <div className="flex items-center gap-2">
@@ -46,20 +43,15 @@ export default async function MyOrderDetailPage({ params }: Props) {
 
       <div className="mt-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="font-heading text-2xl font-bold tracking-tight">
             Commande #{order.id.slice(0, 8)}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Recue le{" "}
-            {new Date(order.createdAt).toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
+            Recue le {formatDate(order.createdAt, "long")}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <OrderStatusBadge status={order.status} />
+          <OrderStatusBadge value={order.status} />
           <UpdateStatusForm orderId={order.id} currentStatus={order.status} />
         </div>
       </div>
@@ -69,7 +61,10 @@ export default async function MyOrderDetailPage({ params }: Props) {
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
           <h2 className="font-semibold">Client</h2>
-          <p className="mt-1 text-sm">{clientName || order.client.email}</p>
+          <p className="mt-1 text-sm">
+            {formatFullName(order.client.firstName, order.client.name) ||
+              order.client.email}
+          </p>
           <p className="text-sm text-muted-foreground">{order.client.email}</p>
         </div>
         <div>
@@ -107,11 +102,10 @@ export default async function MyOrderDetailPage({ params }: Props) {
             </div>
             <div className="text-right text-sm">
               <p>
-                {item.quantity} &times;{" "}
-                {Number(item.unitPrice).toFixed(2)}&nbsp;&euro;
+                {item.quantity} &times; {formatCurrency(item.unitPrice)}
               </p>
               <p className="font-semibold">
-                {(item.quantity * Number(item.unitPrice)).toFixed(2)}&nbsp;&euro;
+                {formatCurrency(item.quantity * Number(item.unitPrice))}
               </p>
             </div>
           </div>

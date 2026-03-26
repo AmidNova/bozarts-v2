@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { userRepository } from "@/lib/repositories/user";
+import { formatDate, formatFullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ProductGrid } from "@/components/products/ProductGrid";
@@ -17,9 +18,7 @@ export default async function ArtisanProfilePage({ params }: Props) {
     notFound();
   }
 
-  const displayName = [artisan.firstName, artisan.name]
-    .filter(Boolean)
-    .join(" ");
+  const displayName = formatFullName(artisan.firstName, artisan.name);
 
   const avgRating =
     artisan.reviewsReceived.length > 0
@@ -48,7 +47,7 @@ export default async function ArtisanProfilePage({ params }: Props) {
           )}
         </div>
         <div className="text-center sm:text-left">
-          <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">{displayName}</h1>
           {artisan.description && (
             <p className="mt-2 max-w-xl text-muted-foreground">
               {artisan.description}
@@ -61,11 +60,7 @@ export default async function ArtisanProfilePage({ params }: Props) {
               </span>
             )}
             <span>
-              Membre depuis{" "}
-              {new Date(artisan.createdAt).toLocaleDateString("fr-FR", {
-                month: "long",
-                year: "numeric",
-              })}
+              Membre depuis {formatDate(artisan.createdAt, "month-year")}
             </span>
           </div>
         </div>

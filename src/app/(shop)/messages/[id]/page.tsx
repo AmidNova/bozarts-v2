@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { messageRepository } from "@/lib/repositories/message";
 import { MessageForm } from "@/components/messages/MessageForm";
+import { formatDate, formatFullName } from "@/lib/format";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -22,9 +23,7 @@ export default async function ConversationPage({ params }: Props) {
 
   if (!correspondent) notFound();
 
-  const correspondentName = [correspondent.firstName, correspondent.name]
-    .filter(Boolean)
-    .join(" ") || "Utilisateur";
+  const correspondentName = formatFullName(correspondent.firstName, correspondent.name) || "Utilisateur";
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
@@ -32,7 +31,7 @@ export default async function ConversationPage({ params }: Props) {
         <Link href="/messages" className="text-sm text-muted-foreground hover:text-foreground">
           &larr; Messages
         </Link>
-        <h1 className="text-xl font-bold">{correspondentName}</h1>
+        <h1 className="font-heading text-xl font-bold">{correspondentName}</h1>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -54,12 +53,7 @@ export default async function ConversationPage({ params }: Props) {
               >
                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                 <p className={`mt-1 text-xs ${isMine ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                  {new Date(msg.createdAt).toLocaleString("fr-FR", {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {formatDate(msg.createdAt, "datetime")}
                 </p>
               </div>
             );

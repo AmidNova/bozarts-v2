@@ -27,6 +27,7 @@ Ce guide t'explique **pourquoi** on a choisi chaque techno et **comment** tout m
 **C'est quoi ?** Un framework React qui gere le frontend ET le backend dans un seul projet.
 
 **Pourquoi ?**
+
 - **Server Components** : le HTML est genere cote serveur. La page charge plus vite, le SEO est meilleur, et tu n'envoies pas tout ton JS au navigateur.
 - **Server Actions** : tu peux ecrire des fonctions serveur (`"use server"`) appelees directement depuis tes formulaires React. Pas besoin de creer des routes API a la main pour chaque action.
 - **App Router** : le systeme de routing par fichiers. Tu crees un fichier `app/products/page.tsx` et tu as automatiquement la route `/products`. Les dossiers entre parentheses `(auth)`, `(dashboard)` sont des "route groups" — ils organisent tes fichiers sans affecter l'URL.
@@ -37,6 +38,7 @@ Ce guide t'explique **pourquoi** on a choisi chaque techno et **comment** tout m
 **C'est quoi ?** JavaScript avec des types.
 
 **Pourquoi ?**
+
 - Ton editeur te previent des erreurs AVANT d'executer le code. Exemple : tu passes un `string` la ou il faut un `number`, TypeScript te le dit tout de suite.
 - L'autocompletion devient tres precise — tu vois les champs disponibles sur chaque objet.
 - Sur un gros projet, ca evite des heures de debug.
@@ -46,6 +48,7 @@ Ce guide t'explique **pourquoi** on a choisi chaque techno et **comment** tout m
 **C'est quoi ?** Un outil qui te permet de manipuler ta base de donnees avec du TypeScript au lieu d'ecrire du SQL brut.
 
 **Pourquoi Prisma plutot que du SQL brut ou un autre ORM ?**
+
 - Tu definis tes tables dans un fichier `schema.prisma` lisible, et Prisma genere les types TypeScript automatiquement. Quand tu ecris `prisma.user.findMany()`, tu as l'autocompletion sur tous les champs de User.
 - Les **migrations** : quand tu modifies ton schema, Prisma genere le SQL de migration. Tu ne risques pas d'oublier un `ALTER TABLE`.
 - Les **relations** : tu definis `User` qui a des `Product[]` dans le schema, et Prisma te permet de faire `include: { products: true }` pour charger les produits d'un user en une seule requete.
@@ -56,6 +59,7 @@ Ce guide t'explique **pourquoi** on a choisi chaque techno et **comment** tout m
 **C'est quoi ?** Une base de donnees relationnelle (comme MySQL, mais en mieux).
 
 **Pourquoi PostgreSQL plutot que MySQL ou MongoDB ?**
+
 - Plus robuste que MySQL sur les types de donnees, les contraintes, et les transactions.
 - Supporte le JSON natif si tu en as besoin un jour, donc tu as le meilleur des deux mondes (relationnel + document).
 - C'est le standard en entreprise pour les projets serieux. Toutes les plateformes cloud le supportent (AWS RDS, Supabase, Neon, etc.).
@@ -66,6 +70,7 @@ Ce guide t'explique **pourquoi** on a choisi chaque techno et **comment** tout m
 **C'est quoi ?** Une librairie d'authentification pour Next.js.
 
 **Pourquoi ?**
+
 - Gere le login, les sessions, les JWT, les cookies securises — tout ce que tu ne veux PAS coder toi-meme (trop de failles de securite possibles).
 - S'integre avec Prisma via un "adapter" : les sessions et comptes sont stockes en base automatiquement.
 - Supporte les providers OAuth (Google, GitHub) et les credentials (email/password). On utilise credentials ici, mais tu peux ajouter Google en 5 lignes plus tard.
@@ -74,10 +79,12 @@ Ce guide t'explique **pourquoi** on a choisi chaque techno et **comment** tout m
 ### Tailwind CSS + shadcn/ui
 
 **Pourquoi Tailwind ?**
+
 - Tu ecris le style directement dans le HTML avec des classes utilitaires (`className="flex gap-4 p-2"`). Pas de fichier CSS separe a maintenir, pas de noms de classes a inventer.
 - Le build supprime automatiquement les classes non utilisees — ton CSS final est minuscule.
 
 **Pourquoi shadcn/ui ?**
+
 - C'est PAS une librairie npm. C'est un generateur : quand tu fais `npx shadcn@latest add button`, il copie le code du composant Button directement dans ton projet (`src/components/ui/button.tsx`).
 - Tu possedes le code. Tu peux le modifier, le styler, le supprimer. Pas de dependance externe, pas de breaking changes quand la lib se met a jour.
 - Les composants sont accessibles (ARIA), bien types, et jolis par defaut.
@@ -87,6 +94,7 @@ Ce guide t'explique **pourquoi** on a choisi chaque techno et **comment** tout m
 **C'est quoi ?** Une librairie de validation de donnees avec inference de types TypeScript.
 
 **Pourquoi ?**
+
 - Tu definis un schema une seule fois, et tu obtiens a la fois la validation runtime ET le type TypeScript.
 - Exemple : `const schema = z.object({ email: z.string().email() })` — Zod valide les donnees a l'execution, et `z.infer<typeof schema>` te donne le type `{ email: string }`.
 - Indispensable pour valider les donnees de formulaires cote serveur (ne jamais faire confiance au client).
@@ -94,6 +102,7 @@ Ce guide t'explique **pourquoi** on a choisi chaque techno et **comment** tout m
 ### bcryptjs (hachage de mots de passe)
 
 **Pourquoi ?**
+
 - Tu ne stockes JAMAIS un mot de passe en clair en base. `bcrypt.hash("password", 10)` produit un hash irreversible.
 - Quand l'utilisateur se connecte, `bcrypt.compare(input, hash)` verifie si le mot de passe correspond sans jamais decoder le hash.
 - Le `10` c'est le "salt rounds" — plus c'est haut, plus c'est lent a cracker (mais aussi plus lent a generer).
@@ -130,6 +139,7 @@ npx create-next-app@latest mon-projet
 ```
 
 Il va te poser des questions. Reponds :
+
 - TypeScript ? **Yes**
 - ESLint ? **Yes**
 - Tailwind CSS ? **Yes**
@@ -144,6 +154,7 @@ cd mon-projet
 ```
 
 **Structure generee :**
+
 ```
 mon-projet/
 ├── src/
@@ -175,6 +186,7 @@ npx prisma init
 ```
 
 Ca cree :
+
 - `prisma/schema.prisma` — ton schema de base de donnees
 - `.env` — tes variables d'environnement (dont DATABASE_URL)
 - `prisma.config.ts` — la config Prisma (Prisma 7+)
@@ -269,15 +281,15 @@ model Product {
 
 **Les concepts cles :**
 
-| Concept | Syntaxe | A quoi ca sert |
-|---------|---------|----------------|
-| Cle primaire | `@id @default(cuid())` | Identifiant unique, genere auto |
-| Nullable | `String?` | Le champ peut etre vide |
-| Unique | `@unique` | Pas de doublon possible |
-| Relation 1-N | `products Product[]` + `artisan User` | Un artisan a plusieurs produits |
-| Cle etrangere | `fields: [artisanId], references: [id]` | Lie Product a User |
-| Cascade | `onDelete: Cascade` | Suppression en cascade |
-| Index | `@@index([artisanId])` | Accelere les requetes sur ce champ |
+| Concept       | Syntaxe                                 | A quoi ca sert                     |
+| ------------- | --------------------------------------- | ---------------------------------- |
+| Cle primaire  | `@id @default(cuid())`                  | Identifiant unique, genere auto    |
+| Nullable      | `String?`                               | Le champ peut etre vide            |
+| Unique        | `@unique`                               | Pas de doublon possible            |
+| Relation 1-N  | `products Product[]` + `artisan User`   | Un artisan a plusieurs produits    |
+| Cle etrangere | `fields: [artisanId], references: [id]` | Lie Product a User                 |
+| Cascade       | `onDelete: Cascade`                     | Suppression en cascade             |
+| Index         | `@@index([artisanId])`                  | Accelere les requetes sur ce champ |
 
 **Pour NextAuth**, tu dois aussi ajouter les modeles `Account`, `Session` et `VerificationToken` — NextAuth en a besoin pour gerer les sessions. Copie-les depuis la doc NextAuth Prisma adapter.
 
@@ -315,14 +327,17 @@ npx prisma migrate dev --name init
 ```
 
 Ca fait 3 choses :
+
 1. Genere le SQL de creation des tables dans `prisma/migrations/`
 2. Execute ce SQL sur ta base PostgreSQL
 3. Regenere le client Prisma (les types TypeScript)
 
 **Tu peux verifier** en ouvrant Prisma Studio :
+
 ```bash
 npx prisma studio
 ```
+
 Ca ouvre une interface web sur `localhost:5555` ou tu vois toutes tes tables.
 
 ---
@@ -350,6 +365,7 @@ AUTH_URL="http://localhost:3001"
 ```
 
 Pour generer le secret :
+
 ```bash
 openssl rand -base64 32
 ```
@@ -406,7 +422,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Compare le mot de passe saisi avec le hash en base
         const passwordMatch = await bcrypt.compare(
           credentials.password as string,
-          user.password
+          user.password,
         );
 
         if (!passwordMatch) {
@@ -446,6 +462,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 ```
 
 **Le flux de login explique :**
+
 1. L'user remplit le formulaire (email + mot de passe)
 2. NextAuth appelle `authorize()` avec les credentials
 3. On cherche le user en base, on compare le hash
@@ -626,7 +643,7 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
-    seed: "npx tsx prisma/seed.ts",  // ← ajoute cette ligne
+    seed: "npx tsx prisma/seed.ts", // ← ajoute cette ligne
   },
   datasource: {
     url: process.env["DATABASE_URL"],
@@ -678,15 +695,15 @@ mon-projet/
 
 ## Commandes utiles
 
-| Commande | Description |
-|----------|-------------|
-| `npm run dev` | Lance le serveur de dev |
-| `npx prisma migrate dev --name xxx` | Cree et applique une migration |
-| `npx prisma db push` | Push le schema sans migration (prototypage) |
-| `npx prisma db seed` | Remplit la base avec les donnees de test |
-| `npx prisma studio` | Interface web pour voir/editer les donnees |
-| `npx prisma generate` | Regenere le client (apres modif du schema) |
-| `npx shadcn@latest add xxx` | Ajoute un composant shadcn/ui |
+| Commande                            | Description                                 |
+| ----------------------------------- | ------------------------------------------- |
+| `npm run dev`                       | Lance le serveur de dev                     |
+| `npx prisma migrate dev --name xxx` | Cree et applique une migration              |
+| `npx prisma db push`                | Push le schema sans migration (prototypage) |
+| `npx prisma db seed`                | Remplit la base avec les donnees de test    |
+| `npx prisma studio`                 | Interface web pour voir/editer les donnees  |
+| `npx prisma generate`               | Regenere le client (apres modif du schema)  |
+| `npx shadcn@latest add xxx`         | Ajoute un composant shadcn/ui               |
 
 ---
 

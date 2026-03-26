@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { orderRepository } from "@/lib/repositories/order";
 import { OrderFilterSchema } from "@/lib/schemas/order";
+import { formatCurrency, formatDate, pluralize } from "@/lib/format";
 import {
   Table,
   TableBody,
@@ -13,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import { OrderStatusFilter } from "@/components/orders/OrderStatusFilter";
 import { Pagination } from "@/components/products/Pagination";
 
@@ -37,7 +38,7 @@ export default async function OrdersPage({ searchParams }: Props) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Mes commandes</h1>
+        <h1 className="font-heading text-3xl font-bold tracking-tight">Mes commandes</h1>
         <Suspense>
           <OrderStatusFilter />
         </Suspense>
@@ -70,16 +71,16 @@ export default async function OrdersPage({ searchParams }: Props) {
                     {order.id.slice(0, 8)}...
                   </TableCell>
                   <TableCell>
-                    {new Date(order.createdAt).toLocaleDateString("fr-FR")}
+                    {formatDate(order.createdAt)}
                   </TableCell>
                   <TableCell>
-                    {order.items.length} article{order.items.length > 1 ? "s" : ""}
+                    {pluralize(order.items.length, "article")}
                   </TableCell>
                   <TableCell className="font-semibold">
-                    {Number(order.totalAmount).toFixed(2)}&nbsp;&euro;
+                    {formatCurrency(order.totalAmount)}
                   </TableCell>
                   <TableCell>
-                    <OrderStatusBadge status={order.status} />
+                    <OrderStatusBadge value={order.status} />
                   </TableCell>
                   <TableCell className="text-right">
                     <Button

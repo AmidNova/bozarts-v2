@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { messageRepository } from "@/lib/repositories/message";
+import { formatDate, formatFullName } from "@/lib/format";
 
 export default async function MessagesPage() {
   const session = await auth();
@@ -11,7 +12,7 @@ export default async function MessagesPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight">Messages</h1>
 
       {conversations.length === 0 ? (
         <p className="mt-8 text-center text-muted-foreground">
@@ -22,9 +23,7 @@ export default async function MessagesPage() {
           {conversations.map((msg) => {
             const correspondent =
               msg.senderId === session.user!.id ? msg.receiver : msg.sender;
-            const correspondentName = [correspondent.firstName, correspondent.name]
-              .filter(Boolean)
-              .join(" ");
+            const correspondentName = formatFullName(correspondent.firstName, correspondent.name);
             const isUnread = !msg.read && msg.receiverId === session.user!.id;
 
             return (
@@ -50,7 +49,7 @@ export default async function MessagesPage() {
                   </p>
                 </div>
                 <p className="shrink-0 text-xs text-muted-foreground">
-                  {new Date(msg.createdAt).toLocaleDateString("fr-FR")}
+                  {formatDate(msg.createdAt)}
                 </p>
               </Link>
             );

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { reviewRepository } from "@/lib/repositories/review";
+import { formatDate, formatFullName, formatStars } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -26,7 +27,7 @@ export default async function MyReviewsPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="text-2xl font-bold tracking-tight">Avis recus</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight">Avis recus</h1>
 
       {avgRating && (
         <p className="mt-2 text-muted-foreground">
@@ -63,10 +64,10 @@ export default async function MyReviewsPage() {
                   </Link>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {review.author.firstName ?? review.author.name}
+                  {formatFullName(review.author.firstName, review.author.name)}
                 </TableCell>
                 <TableCell>
-                  <span className="font-medium">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
+                  <span className="font-medium">{formatStars(review.rating)}</span>
                 </TableCell>
                 <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
                   {review.comment ?? "-"}
@@ -79,7 +80,7 @@ export default async function MyReviewsPage() {
                   )}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {new Date(review.createdAt).toLocaleDateString("fr-FR")}
+                  {formatDate(review.createdAt)}
                 </TableCell>
               </TableRow>
             ))}

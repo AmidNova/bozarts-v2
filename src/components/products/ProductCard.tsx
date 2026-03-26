@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { CATEGORY_LABELS } from "@/lib/constants";
+import { formatCurrency, formatFullName } from "@/lib/format";
 
 interface ProductCardProps {
   product: {
@@ -18,20 +20,8 @@ interface ProductCardProps {
   };
 }
 
-const categoryLabels: Record<string, string> = {
-  CERAMIQUE: "Ceramique",
-  MOBILIER: "Mobilier",
-  BIJOUX: "Bijoux",
-  TEXTILE: "Textile",
-  PEINTURE: "Peinture",
-  SCULPTURE: "Sculpture",
-  AUTRE: "Autre",
-};
-
 export function ProductCard({ product }: ProductCardProps) {
-  const displayName = [product.artisan.firstName, product.artisan.name]
-    .filter(Boolean)
-    .join(" ");
+  const displayName = formatFullName(product.artisan.firstName, product.artisan.name);
 
   return (
     <Link href={`/products/${product.id}`} className="group">
@@ -56,12 +46,12 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         <CardContent className="flex flex-col gap-1">
           <Badge variant="secondary" className="w-fit">
-            {categoryLabels[product.category] ?? product.category}
+            {CATEGORY_LABELS[product.category] ?? product.category}
           </Badge>
           <h3 className="line-clamp-1 font-medium">{product.name}</h3>
           <p className="text-xs text-muted-foreground">par {displayName}</p>
           <p className="mt-1 text-lg font-semibold">
-            {Number(product.price).toFixed(2)}&nbsp;&euro;
+            {formatCurrency(product.price)}
           </p>
         </CardContent>
       </Card>

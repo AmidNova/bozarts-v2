@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { orderRepository } from "@/lib/repositories/order";
 import { OrderFilterSchema } from "@/lib/schemas/order";
+import { formatDate, formatFullName, pluralize } from "@/lib/format";
 import {
   Table,
   TableBody,
@@ -13,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import { OrderStatusFilter } from "@/components/orders/OrderStatusFilter";
 import { UpdateStatusForm } from "@/components/orders/UpdateStatusForm";
 import { Pagination } from "@/components/products/Pagination";
@@ -38,7 +39,7 @@ export default async function MyOrdersPage({ searchParams }: Props) {
   return (
     <>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Commandes recues</h1>
+        <h1 className="font-heading text-2xl font-bold tracking-tight">Commandes recues</h1>
         <Suspense>
           <OrderStatusFilter />
         </Suspense>
@@ -62,45 +63,41 @@ export default async function MyOrdersPage({ searchParams }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((order) => {
-                const clientName = [order.client.firstName, order.client.name]
-                  .filter(Boolean)
-                  .join(" ");
-
-                return (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-xs">
-                      {order.id.slice(0, 8)}...
-                    </TableCell>
-                    <TableCell>{clientName || order.client.email}</TableCell>
-                    <TableCell>
-                      {new Date(order.createdAt).toLocaleDateString("fr-FR")}
-                    </TableCell>
-                    <TableCell>
-                      {order.items.length} article
-                      {order.items.length > 1 ? "s" : ""}
-                    </TableCell>
-                    <TableCell>
-                      <OrderStatusBadge status={order.status} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <UpdateStatusForm
-                          orderId={order.id}
-                          currentStatus={order.status}
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          render={<Link href={`/my-orders/${order.id}`} />}
-                        >
-                          Details
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {orders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-mono text-xs">
+                    {order.id.slice(0, 8)}...
+                  </TableCell>
+                  <TableCell>
+                    {formatFullName(order.client.firstName, order.client.name) ||
+                      order.client.email}
+                  </TableCell>
+                  <TableCell>
+                    {formatDate(order.createdAt)}
+                  </TableCell>
+                  <TableCell>
+                    {pluralize(order.items.length, "article")}
+                  </TableCell>
+                  <TableCell>
+                    <OrderStatusBadge value={order.status} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <UpdateStatusForm
+                        orderId={order.id}
+                        currentStatus={order.status}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        render={<Link href={`/my-orders/${order.id}`} />}
+                      >
+                        Details
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
           <Suspense>
