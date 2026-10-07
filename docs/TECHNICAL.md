@@ -314,7 +314,7 @@ CART_QUANTITY_MAX = 99
 
 1. **Avis** : Un utilisateur ne peut laisser qu'un seul avis par produit. Les avis ne sont visibles qu'apres approbation (`approved: true`). L'artisan ne peut pas noter ses propres produits.
 
-2. **Commandes** : Creees de maniere transactionnelle a partir du panier. Le panier est vide apres creation. Transitions de statut : PENDING → CONFIRMED → SHIPPED → DELIVERED. Annulation possible tant que la commande n'est pas DELIVERED ou CANCELLED.
+2. **Commandes** : Creees de maniere transactionnelle a partir du panier, prix figes a la creation. Paiement Stripe : commande PENDING a l'ouverture du paiement, CONFIRMED au paiement, CANCELLED si la session expire (voir Paiement). Transitions de statut : PENDING → CONFIRMED → SHIPPED → DELIVERED. Annulation possible tant que la commande n'est pas DELIVERED ou CANCELLED.
 
 3. **Panier** : Upsert sur ajout (incremente la quantite si le produit existe deja). La quantite cumulee est plafonnee a `CART_QUANTITY_MAX` (99). Contrainte unique (userId, productId).
 
@@ -326,15 +326,34 @@ CART_QUANTITY_MAX = 99
 
 ## Paiement (Stripe)
 
-Flux actuel :
+Flux :
 
 1. `CheckoutForm` appelle `POST /api/stripe/checkout-session` avec l'adresse de livraison.
-2. La route verifie le panier (non vide, produits en stock) et cree une session Stripe Checkout
-   (lignes produits + ligne "Frais de livraison"). Metadata : `userId`, `shippingAddress`.
-3. Apres paiement, Stripe redirige vers `/checkout/success` et envoie `checkout.session.completed`
-   a `POST /api/stripe/webhook`.
-4. Le webhook verifie la signature (`STRIPE_WEBHOOK_SECRET`), cree la commande `CONFIRMED`
-   depuis le panier et vide le panier. Un panier deja vide (retry Stripe) est ignore.
+2. La route cree une commande **PENDING** depuis le panier via `orderRepository.createFromCart(..., { clearCart: false })` :
+   verification du stock, **prix figes** dans les `OrderItem`, panier conserve.
+   Les lignes Stripe sont construites **a partir de cette commande** (+ ligne "Frais de livraison"),
+   donc le montant debite correspond toujours a la commande.
+3. Session Stripe Checkout : `metadata.orderId` et `client_reference_id` = id de la commande,
+   expiration a 30 minutes. Si Stripe est indisponible, la commande PENDING est annulee (reponse 502).
+4. `POST /api/stripe/webhook` verifie la signature puis :
+   - `checkout.session.completed` avec `payment_status = paid` → `orderRepository.confirmPayment` :
+     PENDING → CONFIRMED, enregistre `stripePaymentId`, retire du panier **uniquement les produits commandes**
+     (un article ajoute pendant le paiement reste dans le panier).
+   - `checkout.session.expired` → `orderRepository.cancelPending` : PENDING → CANCELLED.
+   - Autres evenements : acquittes sans effet.
+
+Garanties :
+
+- **Idempotence** : les transitions ne s'appliquent qu'a une commande encore PENDING
+  (`updateMany where status = PENDING`). Un webhook rejoue par Stripe ne change rien ;
+  une commande annulee ne peut pas etre confirmee, une commande payee ne peut pas etre annulee.
+- **Retries** : une erreur base de donnees dans le webhook renvoie 500 pour que Stripe reessaie.
+- **Erreurs** : les erreurs metier (`OrderValidationError` : panier vide, rupture) sont affichees
+  a l'utilisateur ; les erreurs techniques sont loggees et remplacees par un message generique.
+
+Configuration Stripe (Dashboard → Webhooks) : endpoint `https://<domaine>/api/stripe/webhook`,
+evenements **`checkout.session.completed`** et **`checkout.session.expired`**.
+En local : `stripe listen --forward-to localhost:3000/api/stripe/webhook --events checkout.session.completed,checkout.session.expired`.
 
 Le client Stripe est cree a la demande par `getStripe()` : le build ne requiert aucune cle.
 
@@ -443,6 +462,7 @@ npm run db:studio    # Interface Prisma Studio
 
 ### Phase 5 — Paiement (completee)
 - Stripe Checkout + webhook de confirmation (voir section Paiement)
+- Commande PENDING creee avant paiement, confirmation idempotente (2026-10-07)
 
 ### Phase 6 — DevOps (en cours)
 - [x] CI GitHub Actions verte (lint, typecheck, tests, build, e2e)

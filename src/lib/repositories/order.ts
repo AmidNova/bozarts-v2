@@ -3,14 +3,27 @@ import { SHIPPING_FEE, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import type { OrderFilter } from "@/lib/schemas/order";
 import type { OrderStatus } from "@/generated/prisma/client";
 
+/** Business rule violation whose message is safe to show to the user. */
+export class OrderValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OrderValidationError";
+  }
+}
+
 export const orderRepository = {
   /**
    * Create order from cart items atomically:
    * 1. Read cart items with product prices
-   * 2. Create Order + OrderItems
-   * 3. Clear cart
+   * 2. Create Order + OrderItems (prices are snapshotted)
+   * 3. Clear cart, unless `clearCart: false` — used for Stripe checkout,
+   *    where the cart is only cleared once payment is confirmed.
    */
-  async createFromCart(userId: string, shippingAddress: string) {
+  async createFromCart(
+    userId: string,
+    shippingAddress: string,
+    { clearCart = true }: { clearCart?: boolean } = {}
+  ) {
     return prisma.$transaction(async (tx) => {
       const cartItems = await tx.cartItem.findMany({
         where: { userId },
@@ -18,14 +31,14 @@ export const orderRepository = {
       });
 
       if (cartItems.length === 0) {
-        throw new Error("Le panier est vide");
+        throw new OrderValidationError("Le panier est vide");
       }
 
       // Verify all products are in stock
       const outOfStock = cartItems.filter((item) => !item.product.inStock);
       if (outOfStock.length > 0) {
         const names = outOfStock.map((i) => i.product.name).join(", ");
-        throw new Error(`Produits indisponibles : ${names}`);
+        throw new OrderValidationError(`Produits indisponibles : ${names}`);
       }
 
       const subtotal = cartItems.reduce(
@@ -52,10 +65,50 @@ export const orderRepository = {
         },
       });
 
-      await tx.cartItem.deleteMany({ where: { userId } });
+      if (clearCart) {
+        await tx.cartItem.deleteMany({ where: { userId } });
+      }
 
       return order;
     });
+  },
+
+  /**
+   * Mark a PENDING order as paid (Stripe webhook). Idempotent: a retried or
+   * late webhook for an order that is no longer PENDING changes nothing.
+   * Only the ordered products are removed from the cart, so items added
+   * after checkout started are kept.
+   */
+  async confirmPayment(orderId: string, stripePaymentId: string | null) {
+    return prisma.$transaction(async (tx) => {
+      const { count } = await tx.order.updateMany({
+        where: { id: orderId, status: "PENDING" },
+        data: { status: "CONFIRMED", stripePaymentId },
+      });
+      if (count === 0) return { confirmed: false };
+
+      const order = await tx.order.findUniqueOrThrow({
+        where: { id: orderId },
+        select: { clientId: true, items: { select: { productId: true } } },
+      });
+      await tx.cartItem.deleteMany({
+        where: {
+          userId: order.clientId,
+          productId: { in: order.items.map((item) => item.productId) },
+        },
+      });
+
+      return { confirmed: true };
+    });
+  },
+
+  /** Cancel an order only if it is still PENDING (abandoned or expired checkout). */
+  async cancelPending(orderId: string) {
+    const { count } = await prisma.order.updateMany({
+      where: { id: orderId, status: "PENDING" },
+      data: { status: "CANCELLED" },
+    });
+    return { cancelled: count > 0 };
   },
 
   async findByClientId(clientId: string, filters: OrderFilter) {

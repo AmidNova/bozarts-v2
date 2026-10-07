@@ -85,3 +85,51 @@ Le smoke test `expect(true).toBe(true)` a été supprimé.
 - Le webhook Stripe dupliquait la création de commande de `orderRepository.createFromCart`
   **sans vérifier le stock**, et lisait le panier **au moment du webhook** : si le client modifiait
   son panier entre le paiement et la réception du webhook, la commande ne correspondait plus au montant payé.
+
+---
+
+## 2026-10-07 — Paiement Stripe fiabilise (PR #2)
+
+### Problemes de l'ancien flux
+
+L'ancien webhook `checkout.session.completed` recreait la commande **a partir du panier lu au moment du webhook** :
+
+1. **Montant incoherent** : si le client modifiait son panier (autre onglet) entre l'ouverture du paiement
+   et la reception du webhook, la commande enregistree ne correspondait plus a ce qui avait ete debite.
+2. **Pas de controle de stock** au moment de la creation (logique dupliquee de `createFromCart`, sans la verification).
+3. **Panier entierement vide** a la confirmation, y compris les articles ajoutes pendant le paiement.
+4. **Idempotence fragile** : basee sur "panier vide = deja traite" ; un client qui re-remplissait son panier
+   avant un retry Stripe aurait obtenu une seconde commande.
+5. **Erreurs techniques exposees** : `createOrder` renvoyait `error.message` brut (ex. message Prisma/reseau).
+
+### Nouveau flux
+
+- `checkout-session` cree une commande **PENDING** (stock verifie, prix figes, panier conserve) et construit
+  les lignes Stripe depuis cette commande ; seul `orderId` part en metadata. Session expirant a 30 min.
+- Le webhook ne cree plus rien : il fait passer la commande PENDING → CONFIRMED (`confirmPayment`)
+  ou PENDING → CANCELLED a l'expiration (`cancelPending`). Transitions conditionnees au statut PENDING,
+  donc idempotentes.
+- `confirmPayment` ne retire du panier que les produits de la commande.
+- `OrderValidationError` distingue les erreurs metier (affichees) des erreurs techniques (loggees, message generique).
+- Si la creation de la session Stripe echoue, la commande PENDING est annulee (502).
+
+### Decisions
+
+- **Commande avant paiement plutot que panier serialise dans les metadata Stripe** : les metadata sont
+  limitees (50 cles, 500 caracteres par valeur), insuffisant pour un panier ; la commande en base est
+  la source de verite et sert aussi a construire les lignes Stripe.
+- **Pas de reservation de stock** : `inStock` est un booleen, pas une quantite ; hors perimetre.
+- **Prerequis de deploiement** : abonner l'endpoint au nouvel evenement `checkout.session.expired`,
+  sinon les paiements abandonnes restent PENDING.
+
+### Tests ajoutes
+
+- Integration (`tests/integration/stripe-order.test.ts`, 8 tests) : commande PENDING sans vider le panier,
+  confirmation, articles ajoutes apres le checkout conserves, montant fige malgre un panier modifie,
+  retry idempotent, commande annulee non confirmable, commande payee non annulable.
+- Unitaires : webhook (9 tests : signature, secret manquant, paiement non finalise, metadata manquante,
+  expiration, evenements ignores, 500 sur erreur base) et `checkout-session` (5 tests : auth, validation,
+  erreurs metier, construction des lignes depuis la commande, annulation si Stripe indisponible).
+- `createOrder` : erreur technique masquee.
+
+Total : 98 tests Vitest (74 unitaires, 24 integration) + 7 E2E.

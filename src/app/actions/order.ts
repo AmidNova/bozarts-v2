@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/lib/auth-guard";
-import { orderRepository } from "@/lib/repositories/order";
+import { orderRepository, OrderValidationError } from "@/lib/repositories/order";
 import { CreateOrderSchema, UpdateOrderStatusSchema } from "@/lib/schemas/order";
 import { ok, fail, type ActionResult } from "@/lib/action-result";
 import { revalidatePath } from "next/cache";
@@ -28,9 +28,9 @@ export async function createOrder(
     revalidatePath("/orders");
     return ok({ id: order.id });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Erreur lors de la commande";
-    return fail(message);
+    if (error instanceof OrderValidationError) return fail(error.message);
+    console.error("createOrder failed", error);
+    return fail("Erreur lors de la commande");
   }
 }
 

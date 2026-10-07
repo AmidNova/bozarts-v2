@@ -10,10 +10,14 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth-guard", () => ({ requireAuth: mocks.requireAuth }));
-vi.mock("@/lib/repositories/order", () => ({ orderRepository: mocks.orderRepository }));
+vi.mock("@/lib/repositories/order", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/repositories/order")>()),
+  orderRepository: mocks.orderRepository,
+}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 import { createOrder, updateOrderStatus, cancelOrder } from "@/app/actions/order";
+import { OrderValidationError } from "@/lib/repositories/order";
 
 const { requireAuth, orderRepository } = mocks;
 
@@ -63,12 +67,22 @@ describe("createOrder", () => {
     expect(result).toEqual({ success: true, data: { id: "order-1" } });
   });
 
-  it("surfaces repository business errors (e.g. empty cart)", async () => {
+  it("surfaces business errors (e.g. empty cart) to the user", async () => {
     loggedInAs("client-1", "CLIENT");
-    orderRepository.createFromCart.mockRejectedValue(new Error("Le panier est vide"));
+    orderRepository.createFromCart.mockRejectedValue(new OrderValidationError("Le panier est vide"));
     expect(await createOrder(form({ shippingAddress: "1 rue X" }))).toEqual({
       success: false,
       error: "Le panier est vide",
+    });
+  });
+
+  it("hides technical errors behind a generic message", async () => {
+    loggedInAs("client-1", "CLIENT");
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    orderRepository.createFromCart.mockRejectedValue(new Error("connect ECONNREFUSED 10.0.0.5:5432"));
+    expect(await createOrder(form({ shippingAddress: "1 rue X" }))).toEqual({
+      success: false,
+      error: "Erreur lors de la commande",
     });
   });
 });
