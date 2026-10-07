@@ -50,3 +50,9 @@ infra/*.tfstate
 infra/*.tfstate.*
 infra/*.tfvars
 infra/.terraform.lock.hcl
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
