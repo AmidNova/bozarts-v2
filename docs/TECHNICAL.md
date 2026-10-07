@@ -20,7 +20,9 @@ Bozarts v2 est une marketplace artisanale permettant aux artisans de vendre leur
 | CVA | 0.7 | Class Variance Authority pour les variants de composants |
 | Tailwind CSS | 4.x | Styling utilitaire |
 | bcryptjs | 3.x | Hachage de mots de passe |
-| Vitest | - | Tests unitaires |
+| Stripe | 20.x | Paiement (Checkout + webhook) |
+| Vitest | 4.x | Tests unitaires et d'integration |
+| Playwright | 1.58 | Tests end-to-end |
 
 ---
 
@@ -42,7 +44,8 @@ src/
 │   │   ├── profile/            # Profil utilisateur
 │   │   ├── messages/           # Messagerie
 │   │   └── events/             # Evenements
-│   ├── (dashboard)/            # Route group: espace artisan (auth required)
+│   ├── (dashboard)/            # Route group: espace artisan et admin (auth required)
+│   │   ├── admin/              # Panel admin (users, products, orders, events, reviews, cgu, faq)
 │   │   ├── my-products/        # CRUD produits artisan
 │   │   ├── my-orders/          # Commandes recues
 │   │   └── my-events/          # CRUD evenements
@@ -59,10 +62,13 @@ src/
 │   ├── messages/               # Composants messagerie
 │   ├── events/                 # Composants evenements
 │   ├── profile/                # Composants profil
+│   ├── admin/                  # Composants du panel admin
 │   ├── Header.tsx              # En-tete (Server Component)
 │   ├── Footer.tsx
-│   ├── UserNav.tsx             # Menu utilisateur (Client Component)
-│   └── MobileNav.tsx           # Navigation mobile (Client Component)
+│   ├── MobileNav.tsx           # Navigation mobile (Client Component)
+│   ├── PageHeader.tsx          # Titre de page + actions
+│   ├── EmptyState.tsx          # Etat vide des listes
+│   └── SearchBar.tsx           # Barre de recherche generique
 ├── lib/
 │   ├── repositories/           # Couche d'acces aux donnees
 │   ├── schemas/                # Schemas Zod de validation
@@ -70,11 +76,16 @@ src/
 │   ├── auth-guard.ts           # Guards d'authentification
 │   ├── action-result.ts        # Type ActionResult<T>
 │   ├── constants.ts            # Constantes metier
+│   ├── format.ts               # Formatage (monnaie, dates, noms, pluriels, etoiles)
 │   ├── prisma.ts               # Instance Prisma singleton
+│   ├── stripe.ts               # Client Stripe paresseux (getStripe)
 │   └── utils.ts                # Utilitaires (cn)
 ├── generated/prisma/           # Client Prisma genere
 └── types/
     └── next-auth.d.ts          # Extension des types NextAuth
+
+tests/integration/              # Tests d'integration (PostgreSQL reel)
+e2e/                            # Tests end-to-end Playwright
 ```
 
 ### Patterns architecturaux
@@ -175,6 +186,7 @@ Les formulaires client utilisent le hook React 19 `useActionState` pour gerer l'
 
 - `requireAuth()` — Verifie l'authentification, retourne `{ authenticated, user: { id, role } }`
 - `requireArtisan()` — Verifie authentification + role ARTISAN
+- `requireAdmin()` — Verifie authentification + role ADMIN
 
 ### Protections par route
 
@@ -183,6 +195,7 @@ Les formulaires client utilisent le hook React 19 `useActionState` pour gerer l'
 | `(auth)/*` | Pages publiques (login, register) |
 | `(shop)/*` | Mixte (certaines pages redirigent vers `/login` si non authentifie) |
 | `(dashboard)/*` | Layout protege — redirect vers `/login` si non authentifie |
+| `(dashboard)/admin/*` | Layout admin — redirect vers `/login` si non authentifie, vers `/` si role different d'ADMIN |
 | `my-events/create` | Verification role ARTISAN dans la page |
 
 ---
@@ -245,17 +258,14 @@ Les formulaires client utilisent le hook React 19 `useActionState` pour gerer l'
 
 Tous basés sur `@base-ui/react` avec le pattern `render` prop (pas `asChild`) :
 
-- `avatar.tsx` — Avatar avec fallback initiales
 - `badge.tsx` — Badge avec variants (default, secondary, destructive, outline)
 - `button.tsx` — Bouton avec variants et tailles (CVA)
 - `card.tsx` — Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
-- `dialog.tsx` — Dialog modal
-- `dropdown-menu.tsx` — Menu deroulant
 - `input.tsx` — Champ de saisie
 - `label.tsx` — Label de formulaire
-- `select.tsx` — Select natif style
 - `separator.tsx` — Separateur horizontal
-- `sheet.tsx` — Sheet (drawer lateral, base sur Dialog)
+- `sheet.tsx` — Sheet (drawer lateral)
+- `StatusBadge.tsx` — Badges de statut (commande, role, statut utilisateur, stock)
 - `table.tsx` — Table, TableHeader, TableBody, TableRow, TableHead, TableCell
 - `textarea.tsx` — Zone de texte
 
@@ -306,11 +316,81 @@ CART_QUANTITY_MAX = 99
 
 2. **Commandes** : Creees de maniere transactionnelle a partir du panier. Le panier est vide apres creation. Transitions de statut : PENDING → CONFIRMED → SHIPPED → DELIVERED. Annulation possible tant que la commande n'est pas DELIVERED ou CANCELLED.
 
-3. **Panier** : Upsert sur ajout (incremente la quantite si le produit existe deja). Contrainte unique (userId, productId).
+3. **Panier** : Upsert sur ajout (incremente la quantite si le produit existe deja). La quantite cumulee est plafonnee a `CART_QUANTITY_MAX` (99). Contrainte unique (userId, productId).
 
 4. **Messagerie** : Un utilisateur ne peut pas s'envoyer un message a lui-meme. Les messages non lus sont marques comme lus a l'ouverture du thread. Les conversations sont groupees par correspondant.
 
 5. **Evenements** : Seuls les artisans peuvent creer des evenements. Tous les utilisateurs connectes peuvent s'inscrire. Inscription impossible apres la date de fin. Contrainte unique (eventId, participantId).
+
+---
+
+## Paiement (Stripe)
+
+Flux actuel :
+
+1. `CheckoutForm` appelle `POST /api/stripe/checkout-session` avec l'adresse de livraison.
+2. La route verifie le panier (non vide, produits en stock) et cree une session Stripe Checkout
+   (lignes produits + ligne "Frais de livraison"). Metadata : `userId`, `shippingAddress`.
+3. Apres paiement, Stripe redirige vers `/checkout/success` et envoie `checkout.session.completed`
+   a `POST /api/stripe/webhook`.
+4. Le webhook verifie la signature (`STRIPE_WEBHOOK_SECRET`), cree la commande `CONFIRMED`
+   depuis le panier et vide le panier. Un panier deja vide (retry Stripe) est ignore.
+
+Le client Stripe est cree a la demande par `getStripe()` : le build ne requiert aucune cle.
+
+Variables d'environnement : `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (+ `STRIPE_PUBLISHABLE_KEY`).
+
+---
+
+## Tests
+
+| Niveau | Outil | Emplacement | Dependances |
+|---|---|---|---|
+| Unitaire | Vitest (projet `unit`) | `src/**/__tests__/*.test.ts` | Aucune (repositories et auth mockes) |
+| Integration | Vitest (projet `integration`) | `tests/integration/*.test.ts` | PostgreSQL via `DATABASE_URL` |
+| E2E | Playwright (Chromium) | `e2e/*.spec.ts` | PostgreSQL, base nommee `*_e2e` |
+
+**Unitaires** — formatage, schemas Zod, guards d'authentification, Server Actions
+(regles d'autorisation, validation, messages d'erreur).
+
+**Integration** — repositories contre une vraie base : totaux du panier, plafond de quantite,
+isolation du panier entre utilisateurs, creation de commande transactionnelle (prix figes,
+rollback si rupture de stock), commandes visibles par artisan, statistiques de chiffre d'affaires,
+ownership des produits, moderation des avis. `tests/integration/setup.ts` vide toutes les tables
+avant chaque test ; les fichiers s'executent en serie.
+
+**E2E** — catalogue et fiche produit, redirection du panier anonyme, inscription,
+mauvais mot de passe, acces admin (refuse au client, accorde a l'admin), ajout au panier.
+`playwright.config.ts` lance `e2e/reset-db.ts` (schema + vidage + seed) puis un build de production
+sur le port 3100. Le script refuse toute base dont le nom ne finit pas par `_e2e`.
+
+Lancer en local :
+
+```bash
+docker compose up -d db
+docker compose exec db createdb -U bozarts bozarts_test
+docker compose exec db createdb -U bozarts bozarts_e2e
+
+export TEST_DB="postgresql://bozarts:bozarts_secret@localhost:5432/bozarts_test"
+DATABASE_URL="$TEST_DB" npx prisma db push
+DATABASE_URL="$TEST_DB" npm test
+
+npx playwright install chromium   # une seule fois
+DATABASE_URL="postgresql://bozarts:bozarts_secret@localhost:5432/bozarts_e2e" npm run test:e2e
+```
+
+---
+
+## CI (GitHub Actions)
+
+`.github/workflows/ci.yml`, sur push et pull request vers `main` :
+
+| Job | Depend de | Contenu |
+|---|---|---|
+| `lint-and-typecheck` | — | `npm run lint`, `tsc --noEmit` |
+| `test` | lint | Service PostgreSQL, `prisma db push`, `npm test` (unit + integration) |
+| `build` | test | `next build` sans aucun secret |
+| `e2e` | build | Service PostgreSQL (`bozarts_e2e`), Playwright ; rapport uploade si echec |
 
 ---
 
@@ -321,7 +401,10 @@ npm run dev          # Serveur de developpement
 npm run build        # Build production
 npm run start        # Serveur production
 npm run lint         # Linting ESLint
-npm run test         # Tests Vitest
+npm run test         # Tests Vitest (unit + integration)
+npm run test:unit    # Tests unitaires seuls (aucune dependance)
+npm run test:integration # Tests d'integration (DATABASE_URL requis)
+npm run test:e2e     # Tests Playwright (DATABASE_URL vers une base *_e2e)
 npm run test:watch   # Tests en mode watch
 npm run test:coverage # Tests avec couverture
 npm run db:migrate   # Migration Prisma
@@ -354,7 +437,18 @@ npm run db:studio    # Interface Prisma Studio
 - Evenements (creation, listing, inscription)
 - Integration dans la navigation
 
-### Phases a venir
-- **Phase 4** — Paiement (Stripe integration)
-- **Phase 5** — Admin (dashboard, moderation, CMS)
-- **Phase 6** — Production (SEO, performances, monitoring)
+### Phase 4 — Admin (completee)
+- Dashboard, gestion utilisateurs, produits, commandes, evenements
+- Moderation des avis, CMS (CGU, FAQ)
+
+### Phase 5 — Paiement (completee)
+- Stripe Checkout + webhook de confirmation (voir section Paiement)
+
+### Phase 6 — DevOps (en cours)
+- [x] CI GitHub Actions verte (lint, typecheck, tests, build, e2e)
+- [x] Tests unitaires, d'integration et E2E
+- [ ] Infrastructure Terraform (ECR, ECS, RDS, reseau) — ecrite, jamais appliquee
+- [ ] Deploiement continu (image Docker → ECR → ECS)
+- [ ] Monitoring (Sentry)
+
+L'historique detaille des changements et des decisions est dans [JOURNAL.md](JOURNAL.md).
