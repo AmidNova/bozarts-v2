@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { SHIPPING_FEE } from "@/lib/constants";
+import { CART_QUANTITY_MAX, SHIPPING_FEE } from "@/lib/constants";
 
 export const cartRepository = {
   async findByUserId(userId: string) {
@@ -30,19 +30,33 @@ export const cartRepository = {
     };
   },
 
+  /**
+   * Add a product to the cart, or increment its quantity if already present.
+   * The resulting quantity is capped at CART_QUANTITY_MAX: the input schema only
+   * bounds each addition, not the accumulated total.
+   */
   async addItem(userId: string, productId: string, quantity: number) {
-    return prisma.cartItem.upsert({
-      where: {
-        userId_productId: { userId, productId },
-      },
-      update: {
-        quantity: { increment: quantity },
-      },
-      create: {
-        userId,
-        productId,
-        quantity,
-      },
+    return prisma.$transaction(async (tx) => {
+      const item = await tx.cartItem.upsert({
+        where: {
+          userId_productId: { userId, productId },
+        },
+        update: {
+          quantity: { increment: quantity },
+        },
+        create: {
+          userId,
+          productId,
+          quantity,
+        },
+      });
+
+      if (item.quantity <= CART_QUANTITY_MAX) return item;
+
+      return tx.cartItem.update({
+        where: { id: item.id },
+        data: { quantity: CART_QUANTITY_MAX },
+      });
     });
   },
 
