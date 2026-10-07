@@ -14,6 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/PageHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export default async function MyEventsPage() {
   const session = await auth();
@@ -24,17 +26,17 @@ export default async function MyEventsPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-bold tracking-tight">Mes evenements</h1>
-        <Button render={<Link href="/my-events/create" />}>
-          Creer un evenement
-        </Button>
-      </div>
+      <PageHeader
+        title="Mes evenements"
+        actions={
+          <Button render={<Link href="/my-events/create" />}>
+            Creer un evenement
+          </Button>
+        }
+      />
 
       {events.length === 0 ? (
-        <p className="mt-16 text-center text-muted-foreground">
-          Vous n&apos;avez pas encore cree d&apos;evenement
-        </p>
+        <EmptyState message="Vous n'avez pas encore cree d'evenement" />
       ) : (
         <Table className="mt-6">
           <TableHeader>

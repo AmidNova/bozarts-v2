@@ -5,21 +5,21 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Bozarts warm palette */
-  --color-background: #faf8f5;
-  --color-foreground: #2a2520;
+  /* ── Bozarts v1 palette ── */
+  --color-background: #fff6ec;
+  --color-foreground: #333333;
 
   --color-card: #ffffff;
-  --color-card-foreground: #2a2520;
+  --color-card-foreground: #333333;
 
   --color-popover: #ffffff;
-  --color-popover-foreground: #2a2520;
+  --color-popover-foreground: #333333;
 
-  /* Terre cuite — CTA, liens, boutons principaux */
-  --color-primary: #e8753a;
+  /* Orange Bozarts — CTA, liens, boutons principaux */
+  --color-primary: #f47f3b;
   --color-primary-foreground: #ffffff;
 
-  /* Navy Bozarts — boutons secondaires */
+  /* Navy Bozarts — boutons secondaires, trending cards */
   --color-secondary: #2b3e50;
   --color-secondary-foreground: #ffffff;
 
@@ -36,10 +36,10 @@
 
   --color-border: #e8e2d8;
   --color-input: #e8e2d8;
-  --color-ring: #e8753a;
+  --color-ring: #f47f3b;
 
   /* Charts */
-  --color-chart-1: #e8753a;
+  --color-chart-1: #f47f3b;
   --color-chart-2: #2b3e50;
   --color-chart-3: #7a8b6f;
   --color-chart-4: #c49a2a;
@@ -61,12 +61,12 @@
   /* Sidebar (admin) */
   --color-sidebar: #2b3e50;
   --color-sidebar-foreground: #f0ebe4;
-  --color-sidebar-primary: #e8753a;
+  --color-sidebar-primary: #f47f3b;
   --color-sidebar-primary-foreground: #ffffff;
   --color-sidebar-accent: #3d5269;
   --color-sidebar-accent-foreground: #f0ebe4;
   --color-sidebar-border: #3d5269;
-  --color-sidebar-ring: #e8753a;
+  --color-sidebar-ring: #f47f3b;
 }
 
 @layer base {

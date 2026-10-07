@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { userRepository } from "@/lib/repositories/user";
-import { Badge } from "@/components/ui/badge";
+import { formatFullName } from "@/lib/format";
+import { UserRoleBadge } from "@/components/ui/StatusBadge";
+import { PageHeader } from "@/components/PageHeader";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 
 export default async function ProfilePage() {
@@ -15,13 +17,15 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
+  const displayName = formatFullName(user.firstName, user.name) || user.email;
+
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="flex items-center gap-3">
-        <h1 className="font-heading text-2xl font-bold tracking-tight">Mon profil</h1>
-        <Badge variant="secondary">{user.role}</Badge>
-      </div>
-      <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
+    <div className="mx-auto max-w-2xl">
+      <PageHeader
+        title="Mon profil"
+        subtitle={user.email}
+        actions={<UserRoleBadge value={user.role} />}
+      />
 
       <div className="mt-8">
         <ProfileForm user={user} />

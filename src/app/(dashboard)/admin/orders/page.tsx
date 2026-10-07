@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import { OrderStatusFilter } from "@/components/orders/OrderStatusFilter";
 import { Pagination } from "@/components/products/Pagination";
+import { PageHeader } from "@/components/PageHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -28,20 +30,14 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Commandes</h1>
-          <p className="mt-1 text-muted-foreground">{pluralize(total, "commande")}</p>
-        </div>
-        <Suspense>
-          <OrderStatusFilter />
-        </Suspense>
-      </div>
+      <PageHeader
+        title="Commandes"
+        subtitle={pluralize(total, "commande")}
+        actions={<Suspense><OrderStatusFilter /></Suspense>}
+      />
 
       {orders.length === 0 ? (
-        <p className="mt-16 text-center text-muted-foreground">
-          Aucune commande trouvee.
-        </p>
+        <EmptyState message="Aucune commande trouvee." />
       ) : (
         <div className="mt-6 overflow-x-auto">
           <Table>

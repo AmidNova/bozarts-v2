@@ -13,6 +13,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { DeleteEventButton } from "@/components/admin/DeleteEventButton";
 import { Pagination } from "@/components/products/Pagination";
+import { PageHeader } from "@/components/PageHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -28,15 +30,10 @@ export default async function AdminEventsPage({ searchParams }: Props) {
 
   return (
     <>
-      <div>
-        <h1 className="font-heading text-2xl font-bold tracking-tight">Evenements</h1>
-        <p className="mt-1 text-muted-foreground">{pluralize(total, "evenement")}</p>
-      </div>
+      <PageHeader title="Evenements" subtitle={pluralize(total, "evenement")} />
 
       {events.length === 0 ? (
-        <p className="mt-16 text-center text-muted-foreground">
-          Aucun evenement.
-        </p>
+        <EmptyState message="Aucun evenement." />
       ) : (
         <div className="mt-6 overflow-x-auto">
           <Table>

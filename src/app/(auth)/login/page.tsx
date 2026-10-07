@@ -40,56 +40,64 @@ export default function LoginPage() {
   );
 
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-md items-center px-4 py-8">
-      <div className="w-full space-y-6">
-        <div className="text-center">
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Connexion</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Connectez-vous a votre compte Bozarts
-          </p>
+    <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 py-8">
+      <h1 className="mb-5 font-heading text-4xl font-bold text-primary">Connexion</h1>
+
+      <form
+        action={formAction}
+        className="flex w-full max-w-[450px] flex-col gap-4 rounded-xl bg-primary p-8 shadow-lg transition-all duration-500 hover:-translate-y-2"
+      >
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="email" className="font-bold text-background">
+            Email
+          </Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="vous@exemple.com"
+            className="border-3 border-secondary bg-background"
+          />
         </div>
 
-        <form action={formAction} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              placeholder="vous@exemple.com"
-            />
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="password" className="font-bold text-background">
+            Mot de passe
+          </Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            required
+            autoComplete="current-password"
+            placeholder="••••••••"
+            className="border-3 border-secondary bg-background"
+          />
+        </div>
+
+        {state?.error && (
+          <div className="rounded-lg border border-red-400 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {state.error}
           </div>
+        )}
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">Mot de passe</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              placeholder="••••••••"
-            />
-          </div>
+        <Button
+          type="submit"
+          disabled={pending}
+          className="mt-2 w-full bg-secondary text-lg font-bold hover:bg-[#19242f]"
+        >
+          {pending ? "Connexion..." : "Se connecter"}
+        </Button>
+      </form>
 
-          {state?.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
-          )}
-
-          <Button type="submit" disabled={pending} className="w-full">
-            {pending ? "Connexion..." : "Se connecter"}
-          </Button>
-        </form>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Pas encore de compte ?{" "}
-          <Link href="/register" className="text-primary hover:underline">
-            Inscrivez-vous
-          </Link>
-        </p>
-      </div>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        Pas encore de compte ?{" "}
+        <Link href="/register" className="font-semibold text-primary hover:underline">
+          Inscrivez-vous
+        </Link>
+      </p>
     </div>
   );
 }

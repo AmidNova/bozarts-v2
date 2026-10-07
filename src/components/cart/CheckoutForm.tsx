@@ -54,8 +54,8 @@ export function CheckoutForm({
   }
 
   return (
-    <div className="rounded-xl border p-6">
-      <h2 className="text-lg font-semibold">Recapitulatif</h2>
+    <div className="sticky top-24 rounded-xl border bg-white p-6 shadow-md">
+      <h2 className="text-lg font-semibold text-primary">Recapitulatif</h2>
 
       <div className="mt-4 space-y-2 text-sm">
         <div className="flex justify-between">

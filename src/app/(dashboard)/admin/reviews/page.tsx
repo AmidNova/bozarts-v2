@@ -12,6 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/PageHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export default async function AdminReviewsPage() {
   const session = await auth();
@@ -22,15 +24,13 @@ export default async function AdminReviewsPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="font-heading text-2xl font-bold tracking-tight">Moderation des avis</h1>
-      <p className="mt-1 text-muted-foreground">
-        {pendingReviews.length} avis en attente de moderation
-      </p>
+      <PageHeader
+        title="Moderation des avis"
+        subtitle={`${pendingReviews.length} avis en attente de moderation`}
+      />
 
       {pendingReviews.length === 0 ? (
-        <p className="mt-16 text-center text-muted-foreground">
-          Aucun avis en attente
-        </p>
+        <EmptyState message="Aucun avis en attente" />
       ) : (
         <Table className="mt-6">
           <TableHeader>

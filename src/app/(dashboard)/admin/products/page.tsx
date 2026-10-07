@@ -18,6 +18,8 @@ import { CategoryFilter } from "@/components/products/CategoryFilter";
 import { SearchBar } from "@/components/products/SearchBar";
 import { Pagination } from "@/components/products/Pagination";
 import { StockBadge } from "@/components/ui/StatusBadge";
+import { PageHeader } from "@/components/PageHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -31,25 +33,19 @@ export default async function AdminProductsPage({ searchParams }: Props) {
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Produits</h1>
-          <p className="mt-1 text-muted-foreground">{pluralize(total, "produit")}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Suspense>
-            <SearchBar />
-          </Suspense>
-          <Suspense>
-            <CategoryFilter />
-          </Suspense>
-        </div>
-      </div>
+      <PageHeader
+        title="Produits"
+        subtitle={pluralize(total, "produit")}
+        actions={
+          <div className="flex flex-wrap items-center gap-3">
+            <Suspense><SearchBar /></Suspense>
+            <Suspense><CategoryFilter /></Suspense>
+          </div>
+        }
+      />
 
       {products.length === 0 ? (
-        <p className="mt-16 text-center text-muted-foreground">
-          Aucun produit trouve.
-        </p>
+        <EmptyState message="Aucun produit trouve." />
       ) : (
         <div className="mt-6 overflow-x-auto">
           <Table>

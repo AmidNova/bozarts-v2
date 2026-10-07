@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/table";
 import { DeleteProductButton } from "@/components/products/DeleteProductButton";
 import { StockBadge } from "@/components/ui/StatusBadge";
+import { PageHeader } from "@/components/PageHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export default async function MyProductsPage() {
   const session = await auth();
@@ -27,20 +29,21 @@ export default async function MyProductsPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-bold tracking-tight">Mes produits</h1>
-        <Button render={<Link href="/my-products/new" />}>
-          Nouveau produit
-        </Button>
-      </div>
+      <PageHeader
+        title="Mes produits"
+        actions={
+          <Button render={<Link href="/my-products/new" />}>
+            Nouveau produit
+          </Button>
+        }
+      />
 
       {products.length === 0 ? (
-        <div className="mt-8 text-center text-muted-foreground">
-          <p>Vous n&apos;avez pas encore de produits.</p>
+        <EmptyState message="Vous n'avez pas encore de produits.">
           <p className="mt-1 text-sm">
             Cliquez sur &quot;Nouveau produit&quot; pour commencer.
           </p>
-        </div>
+        </EmptyState>
       ) : (
         <div className="mt-6 overflow-x-auto">
           <Table>

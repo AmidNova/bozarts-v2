@@ -3,7 +3,7 @@ import Link from "next/link";
 import { productRepository } from "@/lib/repositories/product";
 import { reviewRepository } from "@/lib/repositories/review";
 import { auth } from "@/lib/auth";
-import { formatCurrency, formatFullName } from "@/lib/format";
+import { formatCurrency, formatFullName, formatStars } from "@/lib/format";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -41,8 +41,8 @@ export default async function ProductDetailPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* Image */}
-        <div className="aspect-square overflow-hidden rounded-xl bg-muted">
+        {/* Image — bordure orange au hover comme v1 */}
+        <div className="aspect-square overflow-hidden rounded-xl border-4 border-transparent bg-muted transition-colors hover:border-primary">
           {product.imageUrl ? (
             <img
               src={product.imageUrl}
@@ -56,16 +56,16 @@ export default async function ProductDetailPage({ params }: Props) {
           )}
         </div>
 
-        {/* Info */}
-        <div className="flex flex-col gap-4">
+        {/* Info — panneau blanc comme v1 */}
+        <div className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-sm">
           <div>
             <Badge variant="secondary">
               {CATEGORY_LABELS[product.category] ?? product.category}
             </Badge>
-            <h1 className="font-heading mt-2 text-3xl font-bold tracking-tight">
+            <h1 className="font-heading mt-2 text-3xl font-bold tracking-tight text-primary">
               {product.name}
             </h1>
-            <p className="mt-1 text-2xl font-semibold">
+            <p className="mt-1 text-2xl font-bold text-secondary">
               {formatCurrency(product.price)}
             </p>
           </div>
@@ -124,8 +124,8 @@ export default async function ProductDetailPage({ params }: Props) {
                   <p className="font-medium">
                     {formatFullName(review.author.firstName, review.author.name)}
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    {review.rating}/5
+                  <p className="text-sm text-[#ffc107]">
+                    {formatStars(review.rating)}
                   </p>
                 </div>
                 {review.comment && (

@@ -42,7 +42,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
   );
 
   return (
-    <div className="flex items-center gap-4 border-b py-4 last:border-0">
+    <div className="mb-3 flex items-center gap-4 rounded-xl bg-secondary p-4 text-secondary-foreground transition-colors hover:bg-secondary/90">
       <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
         {item.product.imageUrl ? (
           <img
@@ -58,9 +58,9 @@ export function CartItemRow({ item }: CartItemRowProps) {
       </div>
 
       <div className="flex flex-1 flex-col gap-1">
-        <h3 className="font-medium">{item.product.name}</h3>
-        <p className="text-xs text-muted-foreground">par {displayName}</p>
-        <p className="text-sm font-semibold">{formatCurrency(price)}</p>
+        <h3 className="font-medium text-white">{item.product.name}</h3>
+        <p className="text-xs text-white/70">par {displayName}</p>
+        <p className="text-sm font-semibold text-primary">{formatCurrency(price)}</p>
       </div>
 
       <div className="flex items-center gap-2">

@@ -12,6 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/PageHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export default async function MyReviewsPage() {
   const session = await auth();
@@ -27,19 +29,13 @@ export default async function MyReviewsPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="font-heading text-2xl font-bold tracking-tight">Avis recus</h1>
-
-      {avgRating && (
-        <p className="mt-2 text-muted-foreground">
-          Note moyenne : <span className="font-semibold text-foreground">{avgRating}/5</span>
-          {" "}({reviews.length} avis)
-        </p>
-      )}
+      <PageHeader
+        title="Avis recus"
+        subtitle={avgRating ? `Note moyenne : ${avgRating}/5 (${reviews.length} avis)` : undefined}
+      />
 
       {reviews.length === 0 ? (
-        <p className="mt-16 text-center text-muted-foreground">
-          Vous n&apos;avez pas encore recu d&apos;avis
-        </p>
+        <EmptyState message="Vous n'avez pas encore recu d'avis" />
       ) : (
         <Table className="mt-6">
           <TableHeader>
