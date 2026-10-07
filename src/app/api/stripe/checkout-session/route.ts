@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { cartRepository } from "@/lib/repositories/cart";
 import { SHIPPING_FEE } from "@/lib/constants";
 
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
 
   const origin = request.headers.get("origin") ?? process.env.AUTH_URL;
 
-  const checkoutSession = await stripe.checkout.sessions.create({
+  const checkoutSession = await getStripe().checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
     line_items: lineItems,

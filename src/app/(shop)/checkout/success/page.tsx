@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -20,7 +20,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
   if (sessionId) {
     try {
       const checkoutSession =
-        await stripe.checkout.sessions.retrieve(sessionId);
+        await getStripe().checkout.sessions.retrieve(sessionId);
       if (checkoutSession.amount_total) {
         amountPaid = (checkoutSession.amount_total / 100).toFixed(2);
       }
